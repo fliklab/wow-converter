@@ -10,16 +10,24 @@ header h1 {
 
 .dropzone {
   border: 2px dashed var(--primary-color);
-  padding: 20px;
+  padding: 40px 20px;
   margin-bottom: 20px;
   text-align: center;
   border-radius: 8px;
   cursor: pointer;
   color: #aaaaaa;
+  transition: all 0.2s ease;
+}
+
+.dropzone:hover {
+  border-color: var(--primary-hover);
+  background-color: rgba(29, 185, 84, 0.05);
+  transform: translateY(-2px);
 }
 
 .dropzone p {
   margin: 0;
+  font-size: 1.1rem;
 }
 
 .file-list {
