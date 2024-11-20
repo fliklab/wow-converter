@@ -22,12 +22,12 @@ const FileCard: React.FC<FileCardProps> = ({ file, onDownload }) => {
       <img src={file.preview} alt={file.newFileName} className="file-preview" />
       <div className="file-details">
         <h3 className="file-name">{file.newFileName}</h3>
-        <p className="file-status">Status: {file.status}</p>
+        <p className="file-status">상태: {file.status}</p>
         <ProgressBar progress={file.progress} />
 
         <div className="file-metadata">
           <div className="metadata-section">
-            <h4>Input File Metadata</h4>
+            <h4>입력 파일 정보</h4>
             {Object.entries(file.metadata).map(([key, value]) => (
               <div key={key} className="metadata-item">
                 <strong>{key}</strong>
@@ -38,7 +38,7 @@ const FileCard: React.FC<FileCardProps> = ({ file, onDownload }) => {
 
           {file.convertedMetadata && file.status === "done" && (
             <div className="metadata-section">
-              <h4>Output File Metadata</h4>
+              <h4>출력 파일 정보</h4>
               {Object.entries(file.convertedMetadata).map(([key, value]) => (
                 <div key={key} className="metadata-item">
                   <strong>{key}</strong>

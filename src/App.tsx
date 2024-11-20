@@ -117,7 +117,9 @@ const App: React.FC = () => {
   return (
     <div className="app">
       <header>
-        <h1>Safe Image Convert Tool</h1>
+        <h1>ifMage</h1>
+        <p>안전하고 빠른 이미지 변환 도구</p>
+        <p>파일을 서버로 보내지 않아 안전합니다</p>
       </header>
       <Dropzone onDrop={handleDrop} />
       <div className="file-list">
@@ -127,12 +129,12 @@ const App: React.FC = () => {
       </div>
       {files.some((file) => file.status === "done") && (
         <button className="all-download" onClick={handleAllDownload}>
-          Download All
+          모두 다운로드
         </button>
       )}
       {files.length > 0 && (
         <button className="all-download" onClick={() => setFiles([])}>
-          Clear List
+          리스트 비우기
         </button>
       )}
       {showOptions && (
