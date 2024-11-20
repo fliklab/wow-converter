@@ -23,9 +23,9 @@ const OptionsModal: React.FC<OptionsModalProps> = ({ onSubmit, onCancel }) => {
 
   return (
     <div className="modal">
-      <h2>Select Conversion Options</h2>
+      <h2>변환 옵션 선택</h2>
       <label>
-        Output Format:
+        출력 형식:
         <select
           value={outputFormat}
           onChange={(e) => setOutputFormat(e.target.value)}
@@ -36,12 +36,12 @@ const OptionsModal: React.FC<OptionsModalProps> = ({ onSubmit, onCancel }) => {
         </select>
       </label>
       <label>
-        Quality:
+        품질:
         <select value={quality} onChange={(e) => setQuality(e.target.value)}>
-          <option value="original">Original</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
+          <option value="original">원본 그대로</option>
+          <option value="high">높은 품질</option>
+          <option value="medium">중간 품질</option>
+          <option value="low">낮은 품질</option>
         </select>
       </label>
       <label>
@@ -50,7 +50,7 @@ const OptionsModal: React.FC<OptionsModalProps> = ({ onSubmit, onCancel }) => {
           checked={rename}
           onChange={(e) => setRename(e.target.checked)}
         />
-        Rename Files
+        파일 이름 초기화
       </label>
       <label>
         <input
@@ -58,10 +58,10 @@ const OptionsModal: React.FC<OptionsModalProps> = ({ onSubmit, onCancel }) => {
           checked={removeMetadata}
           onChange={(e) => setRemoveMetadata(e.target.checked)}
         />
-        Remove Metadata
+        메타데이터 제거
       </label>
-      <button onClick={handleSubmit}>Start Conversion</button>
-      <button onClick={onCancel}>Cancel</button>
+      <button onClick={handleSubmit}>변환 시작</button>
+      <button onClick={onCancel}>취소</button>
     </div>
   );
 };
