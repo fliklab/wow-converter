@@ -1,38 +1,204 @@
-.App {
+.app {
+  padding: var(--spacing-lg);
+}
+
+header h1 {
   text-align: center;
+  margin-bottom: var(--spacing-lg);
+  color: var(--primary-color);
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.dropzone {
+  border: 2px dashed var(--primary-color);
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #aaaaaa;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.dropzone p {
+  margin: 0;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.file-list {
   display: flex;
   flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.file-card {
+  display: flex;
+  align-items: flex-start;
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  gap: var(--spacing-lg);
+}
+
+.file-preview {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--border-radius-sm);
+  object-fit: cover;
+}
+
+.file-details {
+  flex: 1;
+  color: var(--text-primary);
+}
+
+.file-name {
+  font-size: 1rem;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.file-status {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.button {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: none;
+  border-radius: var(--border-radius-md);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  gap: var(--spacing-sm);
+  min-width: 120px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.button-primary {
+  background: linear-gradient(
+    45deg,
+    var(--primary-color),
+    var(--primary-hover)
+  );
   color: white;
+  box-shadow: 0 4px 12px rgba(29, 185, 84, 0.3);
 }
 
-.App-link {
-  color: #61dafb;
+.button-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.button-primary:active {
+  transform: translateY(0);
+}
+
+.button-secondary {
+  background: var(--card-background);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.button-secondary:hover {
+  background: #333333;
+  transform: translateY(-1px);
+}
+
+.download-button {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.download-button:hover {
+  background: var(--primary-color);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.all-download {
+  margin: var(--spacing-lg) auto;
+  display: block;
+  padding: var(--spacing-md) var(--spacing-xl);
+  background: linear-gradient(
+    45deg,
+    var(--primary-color),
+    var(--primary-hover)
+  );
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-md);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-md);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.all-download:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.all-download:active {
+  transform: translateY(0);
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: #444;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.progress-bar {
+  height: 100%;
+  background: #1db954;
+  transition: width 0.3s ease;
+}
+
+.file-metadata {
+  background: rgba(0, 0, 0, 0.2);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.metadata-section {
+  margin-bottom: 12px;
+}
+
+.metadata-section h4 {
+  color: #1db954;
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+}
+
+.metadata-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  color: #aaa;
+}
+
+.metadata-item strong {
+  color: #ddd;
+  margin-right: 8px;
 }
