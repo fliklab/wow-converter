@@ -116,10 +116,12 @@ const App: React.FC = () => {
 
   return (
     <div className="app">
-      <header>
+      <header className="app-header">
         <h1>ifMage</h1>
-        <p>안전하고 빠른 이미지 변환 도구</p>
-        <p>파일을 서버로 보내지 않아 안전합니다</p>
+        <div className="header-description">
+          <p className="primary-text">안전하고 빠른 이미지 변환 도구</p>
+          <p className="secondary-text">파일을 서버로 보내지 않아 안전합니다</p>
+        </div>
       </header>
       <Dropzone onDrop={handleDrop} />
       <div className="file-list">
