@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -9,6 +9,13 @@ import MarkdownPage from "./pages/MarkdownPage";
 import Header from "./components/Header";
 
 const App: React.FC = () => {
+  useEffect(() => {
+    // 시스템 다크 모드 설정 확인
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
+
   return (
     <Router>
       <div className="min-h-screen bg-white dark:bg-gray-900">
