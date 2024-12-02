@@ -64,10 +64,17 @@ const FileCard: React.FC<FileCardProps> = ({ file, onDownload }) => {
         className="w-16 h-16 rounded object-cover"
       />
       <div className="flex-1 min-w-0">
-        <h3 className="font-medium text-gray-900 dark:text-text-primary truncate">
-          {file.file.name}
-        </h3>
-        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-text-secondary mt-1">
+        <div className="flex items-center gap-2 mb-1">
+          {file.status === "done" && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+              변환 완료
+            </span>
+          )}
+          <h3 className="font-medium text-gray-900 dark:text-text-primary truncate">
+            {file.file.name}
+          </h3>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-text-secondary">
           <span>{file.file.type.split("/")[1].toUpperCase()}</span>
           <span>•</span>
           <span>{formatFileSize(file.file.size)}</span>
@@ -86,7 +93,11 @@ const FileCard: React.FC<FileCardProps> = ({ file, onDownload }) => {
           onClick={() => setIsExtended(!isExtended)}
           className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
         >
-          <ChevronDownIcon className="w-5 h-5" />
+          {isExtended ? (
+            <ChevronUpIcon className="w-5 h-5" />
+          ) : (
+            <ChevronDownIcon className="w-5 h-5" />
+          )}
         </button>
       </div>
     </div>
