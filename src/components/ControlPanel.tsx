@@ -13,6 +13,7 @@ interface ControlPanelProps {
   onClearList: () => void;
   isConverting: boolean;
   progress: number;
+  hasConvertedFiles?: boolean;
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -21,6 +22,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   onClearList,
   isConverting,
   progress,
+  hasConvertedFiles = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [outputFormat, setOutputFormat] = useState("webp");
@@ -56,54 +58,65 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   };
 
   const renderSummary = () => (
-    <div className="flex items-center justify-between p-4">
-      <div className="flex items-center gap-6">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
         <div className="flex items-center gap-2">
-          <span className="text-gray-500 dark:text-gray-400">변환:</span>
-          <span className="font-medium text-gray-900 dark:text-text-primary">
+          <span className="text-gray-500 dark:text-gray-400 whitespace-nowrap">
+            변환:
+          </span>
+          <span className="font-medium text-gray-900 dark:text-text-primary whitespace-nowrap">
             {outputFormat.toUpperCase()} / {getQualityText()}
           </span>
         </div>
         {width && (
           <div className="flex items-center gap-2">
-            <span className="text-gray-500 dark:text-gray-400">크기:</span>
-            <span className="font-medium text-gray-900 dark:text-text-primary">
+            <span className="text-gray-500 dark:text-gray-400 whitespace-nowrap">
+              크기:
+            </span>
+            <span className="font-medium text-gray-900 dark:text-text-primary whitespace-nowrap">
               {width}px
             </span>
           </div>
         )}
         {(rename || removeMetadata) && (
-          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-            {rename && <span>이름 초기화</span>}
+          <div className="flex flex-wrap items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
+            {rename && <span className="whitespace-nowrap">이름 초기화</span>}
             {rename && removeMetadata && <span>•</span>}
-            {removeMetadata && <span>메타데이터 제거</span>}
+            {removeMetadata && (
+              <span className="whitespace-nowrap">메타데이터 제거</span>
+            )}
           </div>
         )}
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="flex gap-2">
-          <button
-            onClick={handleSubmit}
-            disabled={isConverting}
-            className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            변환 시작
-          </button>
-          <button
-            onClick={onDownloadAll}
-            disabled={isConverting}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            모두 다운로드
-          </button>
-          <button
-            onClick={onClearList}
-            disabled={isConverting}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            리스트 비우기
-          </button>
+      <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+        <div className="flex gap-2 flex-1 sm:flex-none">
+          {!isConverting && !hasConvertedFiles && (
+            <button
+              onClick={handleSubmit}
+              className="flex-1 sm:flex-none px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded font-medium transition-colors"
+            >
+              변환 시작
+            </button>
+          )}
+          {(isConverting || hasConvertedFiles) && (
+            <>
+              <button
+                onClick={onDownloadAll}
+                disabled={isConverting}
+                className="flex-1 sm:flex-none px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              >
+                모두 다운로드
+              </button>
+              <button
+                onClick={onClearList}
+                disabled={isConverting}
+                className="flex-1 sm:flex-none px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              >
+                다시 하기
+              </button>
+            </>
+          )}
         </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
@@ -120,11 +133,11 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   );
 
   const renderDetails = () => (
-    <div className="border-t border-gray-200 dark:border-border p-6 space-y-6">
+    <div className="border-t border-gray-200 dark:border-border p-4 sm:p-6 space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-4">
-          <div className="flex flex-wrap gap-4">
-            <label className="flex items-center gap-2 text-gray-700 dark:text-text-primary">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <label className="flex items-center gap-2 text-gray-700 dark:text-text-primary whitespace-nowrap">
               출력 형식:
               <select
                 value={outputFormat}
@@ -136,7 +149,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                 <option value="png">PNG</option>
               </select>
             </label>
-            <label className="flex items-center gap-2 text-gray-700 dark:text-text-primary">
+            <label className="flex items-center gap-2 text-gray-700 dark:text-text-primary whitespace-nowrap">
               품질:
               <select
                 value={quality}
@@ -151,8 +164,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             </label>
           </div>
 
-          <div className="flex gap-4 flex-wrap">
-            <label className="flex items-center gap-2 text-gray-700 dark:text-text-primary cursor-pointer">
+          <div className="flex flex-wrap gap-4">
+            <label className="flex items-center gap-2 text-gray-700 dark:text-text-primary cursor-pointer whitespace-nowrap">
               <input
                 type="checkbox"
                 checked={rename}
@@ -161,7 +174,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               />
               파일 이름 초기화
             </label>
-            <label className="flex items-center gap-2 text-gray-700 dark:text-text-primary cursor-pointer">
+            <label className="flex items-center gap-2 text-gray-700 dark:text-text-primary cursor-pointer whitespace-nowrap">
               <input
                 type="checkbox"
                 checked={removeMetadata}
@@ -174,11 +187,11 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex flex-col gap-4">
             <label className="text-gray-700 dark:text-text-primary">
               가로 길이:
             </label>
-            <div className="flex gap-2 flex-wrap">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
               {predefinedWidths.map((w) => (
                 <button
                   key={w}
@@ -198,7 +211,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               value={width || ""}
               onChange={handleWidthChange}
               placeholder="직접 입력"
-              className="w-24 px-2 py-1 border border-gray-300 dark:border-border rounded bg-white dark:bg-card text-gray-900 dark:text-text-primary focus:ring-2 focus:ring-primary/50 outline-none"
+              className="w-full sm:w-32 px-2 py-1 border border-gray-300 dark:border-border rounded bg-white dark:bg-card text-gray-900 dark:text-text-primary focus:ring-2 focus:ring-primary/50 outline-none"
             />
           </div>
         </div>
