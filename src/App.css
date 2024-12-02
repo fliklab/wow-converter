@@ -1,237 +1,109 @@
-.app {
-  padding: var(--spacing-lg);
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-.app-header {
-  text-align: center;
-  padding: 2rem 0;
-  background: linear-gradient(to right, #667eea, #764ba2);
-  color: white;
-  margin-bottom: 2rem;
-}
+@layer components {
+  .app {
+    @apply flex items-center flex-col p-4 w-full max-w-7xl mx-auto;
+  }
 
-.app-header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  font-weight: bold;
-}
+  .app-header {
+    @apply text-center py-8 bg-gradient-to-r from-blue-400 to-purple-500 text-white mb-8;
+  }
 
-.header-description {
-  max-width: 600px;
-  margin: 0 auto;
-}
+  .app-header h1 {
+    @apply text-4xl mb-4 font-bold;
+  }
 
-.primary-text {
-  font-size: 1.25rem;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-}
+  .header-description {
+    @apply max-w-2xl mx-auto;
+  }
 
-.secondary-text {
-  font-size: 1rem;
-  opacity: 0.9;
-  color: rgba(255, 255, 255, 0.9);
-}
+  .primary-text {
+    @apply text-xl mb-2 font-medium;
+  }
 
-.dropzone {
-  border: 2px dashed var(--primary-color);
-  padding: 40px 20px;
-  margin-bottom: 20px;
-  text-align: center;
-  border-radius: 8px;
-  cursor: pointer;
-  color: #aaaaaa;
-  transition: all 0.2s ease;
-}
+  .secondary-text {
+    @apply text-base text-white/90;
+  }
 
-.dropzone:hover {
-  border-color: var(--primary-hover);
-  background-color: rgba(29, 185, 84, 0.05);
-  transform: translateY(-2px);
-}
+  .dropzone {
+    @apply border-2 border-dashed border-primary p-10 mb-5 text-center rounded-lg cursor-pointer text-gray-400 transition-all duration-200;
+  }
 
-.dropzone p {
-  margin: 0;
-  font-size: 1.1rem;
-}
+  .dropzone:hover {
+    @apply border-primary-hover bg-primary/5 -translate-y-0.5;
+  }
 
-.file-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
+  .dropzone p {
+    @apply m-0 text-lg;
+  }
 
-.file-card {
-  display: flex;
-  align-items: flex-start;
-  background: var(--card-background);
-  border: 1px solid var(--border-color);
-  padding: var(--spacing-md);
-  border-radius: var(--border-radius-md);
-  gap: var(--spacing-lg);
-}
+  .file-list {
+    @apply flex flex-col gap-4;
+  }
 
-.file-preview {
-  width: 100px;
-  height: 100px;
-  border-radius: var(--border-radius-sm);
-  object-fit: cover;
-}
+  .file-card {
+    @apply flex items-start bg-card border border-border p-4 rounded-lg gap-6;
+  }
 
-.file-details {
-  flex: 1;
-  color: var(--text-primary);
-}
+  .file-preview {
+    @apply w-24 h-24 rounded object-cover;
+  }
 
-.file-name {
-  font-size: 1rem;
-  margin: 0;
-  color: var(--text-primary);
-}
+  .file-details {
+    @apply flex-1 text-text-primary;
+  }
 
-.file-status {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-}
+  .file-name {
+    @apply text-base m-0 text-text-primary;
+  }
 
-.button {
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border: none;
-  border-radius: var(--border-radius-md);
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
-  min-width: 120px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
+  .file-status {
+    @apply text-sm text-text-secondary;
+  }
 
-.button-primary {
-  background: linear-gradient(
-    45deg,
-    var(--primary-color),
-    var(--primary-hover)
-  );
-  color: white;
-  box-shadow: 0 4px 12px rgba(29, 185, 84, 0.3);
-}
+  .button {
+    @apply px-4 py-2 rounded-lg font-semibold text-sm cursor-pointer transition-all duration-200 inline-flex items-center justify-center gap-2 min-w-[120px] uppercase tracking-wider;
+  }
 
-.button-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
+  .button-primary {
+    @apply bg-gradient-to-r from-primary to-primary-hover text-white shadow-lg shadow-primary/30;
+  }
 
-.button-primary:active {
-  transform: translateY(0);
-}
+  .button-primary:hover {
+    @apply -translate-y-0.5 shadow-xl;
+  }
 
-.button-secondary {
-  background: var(--card-background);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-}
+  .button-primary:active {
+    @apply translate-y-0;
+  }
 
-.button-secondary:hover {
-  background: #333333;
-  transform: translateY(-1px);
-}
+  .button-secondary {
+    @apply bg-card text-text-primary border border-border;
+  }
 
-.download-button {
-  background: transparent;
-  color: var(--primary-color);
-  border: 1px solid var(--primary-color);
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border-radius: var(--border-radius-sm);
-  font-weight: 600;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
+  .button-secondary:hover {
+    @apply bg-gray-800 -translate-y-0.5;
+  }
 
-.download-button:hover {
-  background: var(--primary-color);
-  color: white;
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
+  .download-button {
+    @apply bg-transparent text-primary border border-primary px-4 py-2 rounded font-semibold text-sm cursor-pointer transition-all duration-200 uppercase tracking-wider;
+  }
 
-.all-download {
-  margin: var(--spacing-lg) auto;
-  display: block;
-  padding: var(--spacing-md) var(--spacing-xl);
-  background: linear-gradient(
-    45deg,
-    var(--primary-color),
-    var(--primary-hover)
-  );
-  color: white;
-  border: none;
-  border-radius: var(--border-radius-md);
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: var(--shadow-md);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-}
+  .download-button:hover {
+    @apply bg-primary text-white -translate-y-0.5 shadow-sm;
+  }
 
-.all-download:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
+  .all-download {
+    @apply my-6 mx-auto block px-8 py-4 bg-gradient-to-r from-primary to-primary-hover text-white rounded-lg font-semibold text-base cursor-pointer transition-all duration-200 shadow-md uppercase tracking-wider;
+  }
 
-.all-download:active {
-  transform: translateY(0);
-}
+  .all-download:hover {
+    @apply -translate-y-0.5 shadow-xl;
+  }
 
-.progress-bar-container {
-  width: 100%;
-  height: 8px;
-  background: #444;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-top: 10px;
-}
-
-.progress-bar {
-  height: 100%;
-  background: #1db954;
-  transition: width 0.3s ease;
-}
-
-.file-metadata {
-  background: rgba(0, 0, 0, 0.2);
-  padding: var(--spacing-sm);
-  border-radius: var(--border-radius-sm);
-  margin-top: var(--spacing-sm);
-}
-
-.metadata-section {
-  margin-bottom: 12px;
-}
-
-.metadata-section h4 {
-  color: #1db954;
-  margin: 0 0 8px 0;
-  font-size: 0.9rem;
-}
-
-.metadata-item {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 4px;
-  color: #aaa;
-}
-
-.metadata-item strong {
-  color: #ddd;
-  margin-right: 8px;
+  .all-download:active {
+    @apply translate-y-0;
+  }
 }
