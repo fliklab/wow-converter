@@ -1,3 +1,4 @@
+import { Buffer } from "buffer";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
@@ -5,6 +6,11 @@ import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
 import rehypePrism from "rehype-prism-plus";
 import matter from "gray-matter";
+
+// Buffer 폴리필 설정
+if (typeof window !== "undefined") {
+  window.Buffer = Buffer;
+}
 
 export interface MarkdownContent {
   content: string;
