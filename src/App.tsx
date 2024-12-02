@@ -6,6 +6,7 @@ import Header from "./components/Header";
 import { generateFileName, downloadFile } from "./utils/helpers";
 import { extractMetadata, removeMetadata } from "./utils/metadata";
 import { convertImage } from "./utils/fileConversion";
+import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import "./App.css";
 
 interface UploadedFile {
@@ -29,6 +30,9 @@ interface UploadedFile {
 const App: React.FC = () => {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [showOptions, setShowOptions] = useState(false);
+
+  const hasConvertedFiles = files.some((file) => file.status === "done");
+  const isConverting = files.some((file) => file.status === "converting");
 
   const handleDrop = async (uploadedFiles: File[]) => {
     const processedFiles = await Promise.all(
@@ -124,6 +128,27 @@ const App: React.FC = () => {
       .forEach((file) => downloadFile(file.convertedFile!));
   };
 
+  const renderUploadSection = () => {
+    if (hasConvertedFiles) {
+      return (
+        <div className="max-w-[768px] mx-auto bg-green-50 dark:bg-green-900/20 rounded-lg p-6 text-center">
+          <div className="flex items-center justify-center mb-3">
+            <CheckCircleIcon className="w-12 h-12 text-green-500 dark:text-green-400" />
+          </div>
+          <h2 className="text-xl font-semibold text-green-800 dark:text-green-200 mb-2">
+            파일 변환이 완료되었습니다!
+          </h2>
+          <p className="text-green-600 dark:text-green-300">
+            각 파일의 다운로드 버튼을 누르거나, 하단의 '모두 다운로드' 버튼을
+            눌러 변환된 파일을 저장하세요.
+          </p>
+        </div>
+      );
+    }
+
+    return <Dropzone onDrop={handleDrop} />;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
@@ -142,7 +167,7 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        <Dropzone onDrop={handleDrop} />
+        {renderUploadSection()}
 
         <div className="space-y-4 mt-6">
           {files.map((file) => (
@@ -154,9 +179,12 @@ const App: React.FC = () => {
           <ControlPanel
             onSubmit={handleOptionsSubmit}
             onDownloadAll={handleAllDownload}
-            onClearList={() => setFiles([])}
-            isConverting={files.some((file) => file.status === "converting")}
-            hasConvertedFiles={files.some((file) => file.status === "done")}
+            onClearList={() => {
+              setFiles([]);
+              setShowOptions(false);
+            }}
+            isConverting={isConverting}
+            hasConvertedFiles={hasConvertedFiles}
             progress={
               files.reduce(
                 (acc, file) =>
