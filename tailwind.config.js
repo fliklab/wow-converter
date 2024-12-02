@@ -16,7 +16,21 @@ module.exports = {
         md: "0 4px 12px rgba(0, 0, 0, 0.15)",
         lg: "0 6px 16px rgba(0, 0, 0, 0.2)",
       },
+      typography: {
+        DEFAULT: {
+          css: {
+            maxWidth: "none",
+            color: "#333",
+            a: {
+              color: "#3182ce",
+              "&:hover": {
+                color: "#2c5282",
+              },
+            },
+          },
+        },
+      },
     },
   },
-  plugins: [],
+  plugins: [require("@tailwindcss/typography")],
 };
