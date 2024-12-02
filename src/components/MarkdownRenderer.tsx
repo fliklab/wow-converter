@@ -1,6 +1,8 @@
 import React from "react";
 import { MarkdownContent } from "../utils/markdownLoader";
 
+export {};
+
 interface MarkdownRendererProps {
   content: MarkdownContent;
   className?: string;
