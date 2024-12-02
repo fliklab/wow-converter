@@ -156,6 +156,7 @@ const App: React.FC = () => {
             onDownloadAll={handleAllDownload}
             onClearList={() => setFiles([])}
             isConverting={files.some((file) => file.status === "converting")}
+            hasConvertedFiles={files.some((file) => file.status === "done")}
             progress={
               files.reduce(
                 (acc, file) =>
