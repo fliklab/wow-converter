@@ -20,10 +20,8 @@ export interface MarkdownContent {
 export async function parseMarkdown(
   markdown: string
 ): Promise<MarkdownContent> {
-  // 프론트매터와 콘텐츠 분리
   const { data: metadata, content: markdownContent } = matter(markdown);
 
-  // 마크다운을 HTML로 변환
   const htmlContent = await unified()
     .use(remarkParse)
     .use(remarkGfm)
@@ -41,11 +39,21 @@ export async function parseMarkdown(
 export async function loadMarkdownFile(path: string): Promise<MarkdownContent> {
   try {
     const response = await fetch(path);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const markdown = await response.text();
+
+    if (markdown.includes("<!DOCTYPE html>")) {
+      throw new Error("마크다운 파일을 찾을 수 없습니다.");
+    }
+
     return parseMarkdown(markdown);
   } catch (error) {
-    console.error("Error loading markdown file:", error);
-    throw error;
+    console.error("마크다운 파일 로딩 오류:", error);
+    throw new Error("마크다운 파일을 불러올 수 없습니다.");
   }
 }
 
