@@ -127,47 +127,45 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
-      <main className="pt-[60px] pb-[200px]">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="py-8 text-center">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              WOW Converter
-            </h1>
-            <div className="max-w-2xl mx-auto">
-              <p className="text-xl text-gray-700 dark:text-gray-200 mb-2">
-                웹사이트에 최적화된 이미지 변환을 위한 온라인 도구
-              </p>
-              <p className="text-gray-600 dark:text-gray-400">
-                파일을 서버로 보내지 않아 안전합니다.
-              </p>
-            </div>
-          </div>
-
-          <Dropzone onDrop={handleDrop} />
-
-          <div className="space-y-4 mt-6">
-            {files.map((file) => (
-              <FileCard key={file.id} file={file} onDownload={handleDownload} />
-            ))}
+      <main className="pt-[60px] px-4 pb-16">
+        <div className="py-8 text-center">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            WOW Converter
+          </h1>
+          <div className="max-w-2xl mx-auto">
+            <p className="text-xl text-gray-700 dark:text-gray-200 mb-2">
+              웹사이트에 최적화된 이미지 변환을 위한 온라인 도구
+            </p>
+            <p className="text-gray-600 dark:text-gray-400">
+              파일을 서버로 보내지 않아 안전합니다
+            </p>
           </div>
         </div>
-      </main>
 
-      {showOptions && (
-        <ControlPanel
-          onSubmit={handleOptionsSubmit}
-          onDownloadAll={handleAllDownload}
-          onClearList={() => setFiles([])}
-          isConverting={files.some((file) => file.status === "converting")}
-          progress={
-            files.reduce(
-              (acc, file) =>
-                acc + (file.status === "converting" ? file.progress : 0),
-              0
-            ) / files.length
-          }
-        />
-      )}
+        <Dropzone onDrop={handleDrop} />
+
+        <div className="space-y-4 mt-6">
+          {files.map((file) => (
+            <FileCard key={file.id} file={file} onDownload={handleDownload} />
+          ))}
+        </div>
+
+        {showOptions && (
+          <ControlPanel
+            onSubmit={handleOptionsSubmit}
+            onDownloadAll={handleAllDownload}
+            onClearList={() => setFiles([])}
+            isConverting={files.some((file) => file.status === "converting")}
+            progress={
+              files.reduce(
+                (acc, file) =>
+                  acc + (file.status === "converting" ? file.progress : 0),
+                0
+              ) / files.length
+            }
+          />
+        )}
+      </main>
     </div>
   );
 };
