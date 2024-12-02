@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 
 interface ControlPanelProps {
   onSubmit: (options: {
@@ -21,8 +22,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   isConverting,
   progress,
 }) => {
-  const [outputFormat, setOutputFormat] = useState("jpg");
-  const [quality, setQuality] = useState("original");
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [outputFormat, setOutputFormat] = useState("webp");
+  const [quality, setQuality] = useState("high");
   const [width, setWidth] = useState<number | null>(null);
   const [rename, setRename] = useState(false);
   const [removeMetadata, setRemoveMetadata] = useState(false);
@@ -38,10 +40,89 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
     setWidth(value);
   };
 
-  return (
-    <div className="max-w-[768px] mx-auto mt-8 bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg shadow-sm">
-      <div className="p-6 space-y-6">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+  const getQualityText = () => {
+    switch (quality) {
+      case "original":
+        return "원본";
+      case "high":
+        return "높은 품질";
+      case "medium":
+        return "중간 품질";
+      case "low":
+        return "낮은 품질";
+      default:
+        return "";
+    }
+  };
+
+  const renderSummary = () => (
+    <div className="flex items-center justify-between p-4">
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2">
+          <span className="text-gray-500 dark:text-gray-400">변환:</span>
+          <span className="font-medium text-gray-900 dark:text-text-primary">
+            {outputFormat.toUpperCase()} / {getQualityText()}
+          </span>
+        </div>
+        {width && (
+          <div className="flex items-center gap-2">
+            <span className="text-gray-500 dark:text-gray-400">크기:</span>
+            <span className="font-medium text-gray-900 dark:text-text-primary">
+              {width}px
+            </span>
+          </div>
+        )}
+        {(rename || removeMetadata) && (
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+            {rename && <span>이름 초기화</span>}
+            {rename && removeMetadata && <span>•</span>}
+            {removeMetadata && <span>메타데이터 제거</span>}
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center gap-4">
+        <div className="flex gap-2">
+          <button
+            onClick={handleSubmit}
+            disabled={isConverting}
+            className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            변환 시작
+          </button>
+          <button
+            onClick={onDownloadAll}
+            disabled={isConverting}
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            모두 다운로드
+          </button>
+          <button
+            onClick={onClearList}
+            disabled={isConverting}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            리스트 비우기
+          </button>
+        </div>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+        >
+          {isExpanded ? (
+            <ChevronUpIcon className="w-5 h-5" />
+          ) : (
+            <ChevronDownIcon className="w-5 h-5" />
+          )}
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderDetails = () => (
+    <div className="border-t border-gray-200 dark:border-border p-6 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-4">
           <div className="flex flex-wrap gap-4">
             <label className="flex items-center gap-2 text-gray-700 dark:text-text-primary">
               출력 형식:
@@ -50,9 +131,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                 onChange={(e) => setOutputFormat(e.target.value)}
                 className="px-2 py-1 border border-gray-300 dark:border-border rounded bg-white dark:bg-card text-gray-900 dark:text-text-primary focus:ring-2 focus:ring-primary/50 outline-none"
               >
+                <option value="webp">WebP</option>
                 <option value="jpg">JPG</option>
                 <option value="png">PNG</option>
-                <option value="webp">WebP</option>
               </select>
             </label>
             <label className="flex items-center gap-2 text-gray-700 dark:text-text-primary">
@@ -70,6 +151,29 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             </label>
           </div>
 
+          <div className="flex gap-4 flex-wrap">
+            <label className="flex items-center gap-2 text-gray-700 dark:text-text-primary cursor-pointer">
+              <input
+                type="checkbox"
+                checked={rename}
+                onChange={(e) => setRename(e.target.checked)}
+                className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
+              />
+              파일 이름 초기화
+            </label>
+            <label className="flex items-center gap-2 text-gray-700 dark:text-text-primary cursor-pointer">
+              <input
+                type="checkbox"
+                checked={removeMetadata}
+                onChange={(e) => setRemoveMetadata(e.target.checked)}
+                className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
+              />
+              메타데이터 제거
+            </label>
+          </div>
+        </div>
+
+        <div className="space-y-4">
           <div className="flex items-center gap-4 flex-wrap">
             <label className="text-gray-700 dark:text-text-primary">
               가로 길이:
@@ -98,61 +202,22 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             />
           </div>
         </div>
-
-        <div className="flex gap-4 flex-wrap">
-          <label className="flex items-center gap-2 text-gray-700 dark:text-text-primary cursor-pointer">
-            <input
-              type="checkbox"
-              checked={rename}
-              onChange={(e) => setRename(e.target.checked)}
-              className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
-            />
-            파일 이름 초기화
-          </label>
-          <label className="flex items-center gap-2 text-gray-700 dark:text-text-primary cursor-pointer">
-            <input
-              type="checkbox"
-              checked={removeMetadata}
-              onChange={(e) => setRemoveMetadata(e.target.checked)}
-              className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
-            />
-            메타데이터 제거
-          </label>
-        </div>
-
-        {isConverting && (
-          <div className="h-1 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
-            <div
-              className="h-full bg-primary transition-[width] duration-300"
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
-        )}
-
-        <div className="flex justify-end gap-4">
-          <button
-            onClick={handleSubmit}
-            disabled={isConverting}
-            className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            변환 시작
-          </button>
-          <button
-            onClick={onDownloadAll}
-            disabled={isConverting}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            모두 다운로드
-          </button>
-          <button
-            onClick={onClearList}
-            disabled={isConverting}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            리스트 비우기
-          </button>
-        </div>
       </div>
+    </div>
+  );
+
+  return (
+    <div className="max-w-[768px] mx-auto mt-8 bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg shadow-sm">
+      {renderSummary()}
+      {isExpanded && renderDetails()}
+      {isConverting && (
+        <div className="h-1 bg-gray-200 dark:bg-gray-700 rounded-b overflow-hidden">
+          <div
+            className="h-full bg-primary transition-[width] duration-300"
+            style={{ width: `${progress}%` }}
+          ></div>
+        </div>
+      )}
     </div>
   );
 };
