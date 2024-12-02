@@ -2,15 +2,24 @@
  * Generates a unique file name if renaming is required.
  * @param originalName The original file name.
  * @param format The target format (e.g., "jpg", "png").
+ * @param existingNames A set of existing file names.
  * @returns A new file name with timestamp.
  */
 export const generateFileName = (
   originalName: string,
-  format: string
+  format: string,
+  existingNames: Set<string>
 ): string => {
   const baseName = originalName.split(".")[0];
-  const timestamp = Date.now();
-  return `${baseName}_${timestamp}.${format}`;
+  let counter = 1;
+  let newName = `${baseName}.${format}`;
+
+  while (existingNames.has(newName)) {
+    newName = `${baseName}_${counter}.${format}`;
+    counter++;
+  }
+
+  return newName;
 };
 
 /**

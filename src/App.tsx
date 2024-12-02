@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import Dropzone from "./components/Dropzone";
 import FileCard from "./components/FileCard";
-import OptionsModal from "./components/OptionsModal";
+import ControlPanel from "./components/ControlPanel";
+import Header from "./components/Header";
 import { generateFileName, downloadFile } from "./utils/helpers";
 import { extractMetadata, removeMetadata } from "./utils/metadata";
 import { convertImage } from "./utils/fileConversion";
@@ -60,7 +61,6 @@ const App: React.FC = () => {
       options: { ...file.options, ...options },
     }));
     setFiles(updatedFiles);
-    setShowOptions(false);
     startConversion(updatedFiles);
   };
 
@@ -68,22 +68,32 @@ const App: React.FC = () => {
     const updatedFiles = await Promise.all(
       filesToConvert.map(async (file) => {
         try {
-          let processedFile = file.file;
+          let inputFile = file.file;
 
           // Remove metadata if required
           if (file.options.removeMetadata) {
-            processedFile = await removeMetadata(file.file);
+            inputFile = await removeMetadata(file.file);
+            // 메타데이터가 제거된 파일의 메타데이터를 다시 추출
+            const cleanMetadata = await extractMetadata(inputFile);
+            file.metadata = cleanMetadata; // 원본 메타데이터 업데이트
           }
 
           // Convert image
-          const convertedFile = await convertImage(processedFile, file.options);
+          const outputFile = await convertImage(inputFile, file.options);
 
           // Extract metadata from converted file
-          const convertedMetadata = await extractMetadata(convertedFile);
+          const outputMetadata = await extractMetadata(outputFile);
+
+          // Get existing file names
+          const existingNames = new Set(files.map((f) => f.newFileName));
 
           // Rename if required
           const newFileName = file.options.rename
-            ? generateFileName(file.file.name, file.options.outputFormat)
+            ? generateFileName(
+                file.file.name,
+                file.options.outputFormat,
+                existingNames
+              )
             : file.file.name;
 
           return {
@@ -91,8 +101,8 @@ const App: React.FC = () => {
             status: "done" as const,
             progress: 100,
             newFileName,
-            convertedFile,
-            convertedMetadata,
+            convertedFile: outputFile,
+            convertedMetadata: outputMetadata,
           };
         } catch {
           return { ...file, status: "error" as const };
@@ -115,34 +125,47 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>ifMage</h1>
-        <div className="header-description">
-          <p className="primary-text">안전하고 빠른 이미지 변환 도구</p>
-          <p className="secondary-text">파일을 서버로 보내지 않아 안전합니다</p>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Header />
+      <main className="pt-[60px] pb-[200px]">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="py-8 text-center">
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              WOW Converter
+            </h1>
+            <div className="max-w-2xl mx-auto">
+              <p className="text-xl text-gray-700 dark:text-gray-200 mb-2">
+                웹사이트에 최적화된 이미지 변환을 위한 온라인 도구
+              </p>
+              <p className="text-gray-600 dark:text-gray-400">
+                파일을 서버로 보내지 않아 안전합니다.
+              </p>
+            </div>
+          </div>
+
+          <Dropzone onDrop={handleDrop} />
+
+          <div className="space-y-4 mt-6">
+            {files.map((file) => (
+              <FileCard key={file.id} file={file} onDownload={handleDownload} />
+            ))}
+          </div>
         </div>
-      </header>
-      <Dropzone onDrop={handleDrop} />
-      <div className="file-list">
-        {files.map((file) => (
-          <FileCard key={file.id} file={file} onDownload={handleDownload} />
-        ))}
-      </div>
-      {files.some((file) => file.status === "done") && (
-        <button className="all-download" onClick={handleAllDownload}>
-          모두 다운로드
-        </button>
-      )}
-      {files.length > 0 && (
-        <button className="all-download" onClick={() => setFiles([])}>
-          리스트 비우기
-        </button>
-      )}
+      </main>
+
       {showOptions && (
-        <OptionsModal
+        <ControlPanel
           onSubmit={handleOptionsSubmit}
-          onCancel={() => setShowOptions(false)}
+          onDownloadAll={handleAllDownload}
+          onClearList={() => setFiles([])}
+          isConverting={files.some((file) => file.status === "converting")}
+          progress={
+            files.reduce(
+              (acc, file) =>
+                acc + (file.status === "converting" ? file.progress : 0),
+              0
+            ) / files.length
+          }
         />
       )}
     </div>
