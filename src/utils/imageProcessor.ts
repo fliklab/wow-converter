@@ -1,62 +1,91 @@
 // 이 파일은 @squoosh/lib와 craco 설정을 사용했을 때의 상태를 기록하기 위한 것입니다.
 // 이 코드는 컴파일은 통과하지만, 런타임에서 "Cannot set property navigator of #<Window>" 오류를 발생시켰습니다.
 
-import { ImagePool } from "@squoosh/lib";
-import { cpus } from "os"; // 이 부분 때문에 craco 폴리필 설정이 필요했습니다.
+import { encode as encodeJpeg, decode as decodeJpeg } from "@jsquash/jpeg";
+import { encode as encodeWebp, decode as decodeWebp } from "@jsquash/webp";
+import { encode as encodeAvif, decode as decodeAvif } from "@jsquash/avif";
+import { encode as encodePng, decode as decodePng } from "@jsquash/png";
 
-export type ImageFormat = "jpeg" | "webp" | "avif";
+// 지원하는 이미지 포맷 타입을 정의합니다.
+export type ImageFormat = "jpeg" | "webp" | "avif" | "png";
 
+// 지원하는 MIME 타입을 정의합니다.
+type MimeType = "image/jpeg" | "image/png" | "image/webp" | "image/avif";
+
+// 이미지 처리 옵션을 정의합니다.
 export interface ImageProcessingOptions {
   format: ImageFormat;
   quality?: number;
 }
 
-// ImagePool을 사용하여 이미지 처리를 관리합니다.
-// Squoosh/lib는 시스템의 CPU 코어 수를 기반으로 병렬 처리를 시도합니다.
-const imagePool = new ImagePool(cpus().length);
+// 이미지 처리 결과를 위한 인터페이스입니다.
+export interface ProcessingResult {
+  blob: Blob;
+  format: ImageFormat;
+  size: number;
+}
+
+// 각 포맷에 맞는 인코더/디코더 함수를 매핑합니다.
+const encoders = {
+  jpeg: encodeJpeg,
+  webp: encodeWebp,
+  avif: encodeAvif,
+  png: encodePng,
+};
+
+const decoders: Record<MimeType, (data: ArrayBuffer) => Promise<ImageData>> = {
+  "image/jpeg": async (data) => {
+    const imageData = await decodeJpeg(data);
+    if (!imageData) throw new Error("JPEG 디코딩 실패");
+    return imageData;
+  },
+  "image/png": async (data) => {
+    const imageData = await decodePng(data);
+    if (!imageData) throw new Error("PNG 디코딩 실패");
+    return imageData;
+  },
+  "image/webp": async (data) => {
+    const imageData = await decodeWebp(data);
+    if (!imageData) throw new Error("WebP 디코딩 실패");
+    return imageData;
+  },
+  "image/avif": async (data) => {
+    const imageData = await decodeAvif(data);
+    if (!imageData) throw new Error("AVIF 디코딩 실패");
+    return imageData;
+  },
+};
 
 /**
- * @squoosh/lib를 사용하여 이미지를 처리하는 함수.
+ * jSquash 라이브러리를 사용하여 이미지를 처리합니다.
  * @param file 처리할 이미지 파일
  * @param options 처리 옵션 (포맷, 품질 등)
  * @returns 처리된 이미지 결과
  */
-export const processImageWithSquooshLib = async (
+export const processImage = async (
   file: File,
   options: ImageProcessingOptions
-) => {
+): Promise<ProcessingResult> => {
   try {
-    const image = imagePool.ingestImage(await file.arrayBuffer());
+    const arrayBuffer = await file.arrayBuffer();
 
-    // @squoosh/lib는 'jpeg' 대신 'mozjpeg'를 키로 사용합니다.
-    const encoderKey = options.format === "jpeg" ? "mozjpeg" : options.format;
-
-    // 인코딩 옵션을 설정합니다.
-    const encodeOptions = {
-      [encoderKey]: {
-        quality: options.quality,
-      },
-    };
-
-    // 이미지 전처리 및 인코딩을 수행합니다.
-    await image.encode(encodeOptions);
-
-    const encodedImage = image.encodedWith[encoderKey];
-    if (!encodedImage) {
-      throw new Error(`${encoderKey}로 인코딩된 이미지를 찾을 수 없습니다.`);
+    const decoder = decoders[file.type as MimeType];
+    if (!decoder) {
+      throw new Error(`지원하지 않는 파일 형식입니다: ${file.type}`);
     }
+    const imageData = await decoder(arrayBuffer);
 
-    // @squoosh/lib의 EncodeResult 타입에는 `type` 속성이 없습니다.
-    // 당시 상황을 재현하기 위해 `image/` 접두사를 붙여 MIME 타입을 직접 만듭니다.
+    const encode = encoders[options.format];
+
+    const encodedData = await encode(imageData);
+
     return {
-      blob: new Blob([encodedImage.binary], {
-        type: `image/${options.format}`,
-      }),
+      blob: new Blob([encodedData], { type: `image/${options.format}` }),
       format: options.format,
-      size: encodedImage.size,
+      size: encodedData.byteLength,
     };
   } catch (error) {
-    console.error("@squoosh/lib 처리 중 오류 발생:", error);
-    throw new Error("@squoosh/lib를 사용한 이미지 처리 실패");
+    console.error("이미지 처리 중 오류 발생:", error);
+    throw new Error("이미지 처리 실패");
   }
 };

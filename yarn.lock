@@ -1544,6 +1544,30 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
+"@jsquash/avif@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@jsquash/avif/-/avif-2.1.1.tgz#600c77158363220e2f0dc4f6f72ece7e604231bf"
+  integrity sha512-LMRxd0fMgfCLtobDh0/sFYJMMiRJTNYSEEWvRDKXlAeZ08t3gI5V+1thIT0XjXJ+SVG7Zug9B0XPyx0Ti5VRNA==
+  dependencies:
+    wasm-feature-detect "^1.2.11"
+
+"@jsquash/jpeg@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@jsquash/jpeg/-/jpeg-1.6.0.tgz#45474ce6d5b6165740d135c7bdf36dee9ba8618e"
+  integrity sha512-zwN46Awh1VM6gXlIcALwb5WzqK5H2e6+Awcs1QP8AvS8ohsK/sbE4esvmH4jhlhW7+CgiUUww66vg0aTnlSIMA==
+
+"@jsquash/png@^3.1.1":
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/@jsquash/png/-/png-3.1.1.tgz#26b154c35f297ca8d1d31e7ecb23ef2447b9a986"
+  integrity sha512-C10pc+0H6j0h8fENOfnGOvkXCmvpSQTDGlfGd0sHphZhPSGTyLjIrHba0FaZZdsKqA/wlmhYicUHb92vfZphaw==
+
+"@jsquash/webp@^1.5.0":
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@jsquash/webp/-/webp-1.5.0.tgz#1e8ce357cde2decf4f880a8c436f8f1529cd3f48"
+  integrity sha512-KggLoj2MnRSfIqTeKe1EmbljTX2vuV7mh79k89PCL1pyqiDULcPM1L47twxXt0hkb68F70bXiL31MxsuoZtKFw==
+  dependencies:
+    wasm-feature-detect "^1.2.11"
+
 "@leichtgewicht/ip-codec@^2.0.1":
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/@leichtgewicht/ip-codec/-/ip-codec-2.0.5.tgz#4fc56c15c580b9adb7dc3c333a134e540b44bfb1"
@@ -9109,6 +9133,11 @@ walker@^1.0.7:
   integrity sha512-ts/8E8l5b7kY0vlWLewOkDXMmPdLcVV4GmOQLyxuSswIJsweeFZtAsMF7k1Nszz+TYBQrlYRmzOnr398y1JemQ==
   dependencies:
     makeerror "1.0.12"
+
+wasm-feature-detect@^1.2.11:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/wasm-feature-detect/-/wasm-feature-detect-1.8.0.tgz#4e9f55b0a64d801f372fbb0324ed11ad3abd0c78"
+  integrity sha512-zksaLKM2fVlnB5jQQDqKXXwYHLQUVH9es+5TOOHwGOVJOCeRBCiPjwSg+3tN2AdTCzjgli4jijCH290kXb/zWQ==
 
 watchpack@^2.4.1:
   version "2.4.2"
