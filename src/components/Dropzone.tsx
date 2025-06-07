@@ -1,88 +1,42 @@
-import React, { useRef, useState } from "react";
-import { ArrowUpTrayIcon } from "@heroicons/react/24/outline";
+import React from "react";
+import { useDropzone, DropzoneOptions } from "react-dropzone";
 
 interface DropzoneProps {
   onDrop: (files: File[]) => void;
+  isConverting: boolean;
 }
 
-const Dropzone: React.FC<DropzoneProps> = ({ onDrop }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(false);
-    const files = Array.from(event.dataTransfer.files);
-    onDrop(files);
+export const Dropzone: React.FC<DropzoneProps> = ({ onDrop, isConverting }) => {
+  const dropzoneOptions: DropzoneOptions = {
+    onDrop,
+    accept: {
+      "image/*": [".jpeg", ".jpg", ".png", ".webp", ".avif"],
+    },
   };
 
-  const handleFileInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const files = Array.from(event.target.files);
-      onDrop(files);
-    }
-  };
-
-  const handleClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(false);
-  };
+  const { getRootProps, getInputProps, isDragActive } =
+    useDropzone(dropzoneOptions);
 
   return (
-    <div className="max-w-[768px] mx-auto">
-      <div
-        className={`
-          relative rounded-lg border-2 border-dashed p-8 
-          transition-all duration-200 cursor-pointer
-          ${
-            isDragging
-              ? "border-primary bg-primary/5"
-              : "border-gray-300 dark:border-gray-600 hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800/30"
-          }
-        `}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={handleClick}
-      >
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileInput}
-          multiple
-          accept="image/jpeg,image/png,image/webp"
-          className="hidden"
-        />
-        <div className="flex flex-col items-center justify-center gap-3">
-          <ArrowUpTrayIcon
-            className={`w-10 h-10 ${
-              isDragging ? "text-primary" : "text-gray-400 dark:text-gray-500"
-            }`}
-          />
-          <div className="text-center">
-            <p className="text-base font-medium text-gray-700 dark:text-gray-200">
-              이미지를 드래그하여 업로드하거나
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              클릭하여 파일을 선택하세요
-            </p>
-          </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            지원 형식: JPG, PNG, WebP
-          </p>
-        </div>
-      </div>
+    <div
+      {...getRootProps()}
+      className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
+        ${
+          isDragActive
+            ? "border-blue-500 bg-blue-50"
+            : "border-gray-300 hover:border-gray-400"
+        }`}
+    >
+      <input {...getInputProps()} />
+      {isConverting ? (
+        <p className="text-gray-600">변환 중...</p>
+      ) : isDragActive ? (
+        <p className="text-blue-500">파일을 여기에 놓으세요</p>
+      ) : (
+        <p className="text-gray-500">
+          이미지를 드래그 앤 드롭하거나 클릭하여 선택하세요
+        </p>
+      )}
     </div>
   );
 };
-
-export default Dropzone;
