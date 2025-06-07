@@ -1,6 +1,3 @@
-// 이 파일은 @squoosh/lib와 craco 설정을 사용했을 때의 상태를 기록하기 위한 것입니다.
-// 이 코드는 컴파일은 통과하지만, 런타임에서 "Cannot set property navigator of #<Window>" 오류를 발생시켰습니다.
-
 import { encode as encodeJpeg, decode as decodeJpeg } from "@jsquash/jpeg";
 import { encode as encodeWebp, decode as decodeWebp } from "@jsquash/webp";
 import { encode as encodeAvif, decode as decodeAvif } from "@jsquash/avif";
@@ -33,6 +30,7 @@ const encoders = {
   png: encodePng,
 };
 
+// 디코더의 반환 타입 문제를 해결하기 위해, 반환값을 검사하는 Wrapper 함수를 사용합니다.
 const decoders: Record<MimeType, (data: ArrayBuffer) => Promise<ImageData>> = {
   "image/jpeg": async (data) => {
     const imageData = await decodeJpeg(data);
@@ -77,6 +75,8 @@ export const processImage = async (
 
     const encode = encoders[options.format];
 
+    // TODO: jSquash 라이브러리에서 인코딩 품질을 설정하는 방법을 확인 필요.
+    // 현재는 기본 옵션으로만 인코딩.
     const encodedData = await encode(imageData);
 
     return {
