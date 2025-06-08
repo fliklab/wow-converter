@@ -4,6 +4,7 @@ import { ImageFormat } from "../utils/imageProcessor";
 import { Dropzone } from "./Dropzone";
 import { Results } from "./Results";
 import { ErrorDisplay } from "./ErrorDisplay";
+import { Toast } from "./Toast";
 import ControlPanel from "./ControlPanel";
 
 export const ImageConverter: React.FC = () => {
@@ -12,11 +13,14 @@ export const ImageConverter: React.FC = () => {
     files,
     results,
     error,
+    showToast,
     setSettings,
     onDrop,
     handleConvert,
     handleDownloadAll,
     handleClear,
+    handleRemoveFile,
+    dismissToast,
   } = useImageConverter();
 
   const handleControlPanelSubmit = (options: {
@@ -55,7 +59,7 @@ export const ImageConverter: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto pb-32">
       <header className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-800 dark:text-white">
           WOW Converter
@@ -69,9 +73,15 @@ export const ImageConverter: React.FC = () => {
       </header>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
-        <Dropzone onDrop={onDrop} isConverting={isConverting} />
+        {results.length === 0 && (
+          <Dropzone onDrop={onDrop} isConverting={isConverting} />
+        )}
         <ErrorDisplay error={error} />
-        <Results files={files} results={results} />
+        <Results
+          files={files}
+          results={results}
+          onRemoveFile={handleRemoveFile}
+        />
       </div>
 
       {files.length > 0 && (
@@ -81,6 +91,16 @@ export const ImageConverter: React.FC = () => {
           onClearList={handleClear}
           isConverting={isConverting}
           progress={0} // TODO: 실제 진행률 계산 로직 추가
+          hasResults={results.length > 0}
+          hasFiles={files.length > 0}
+        />
+      )}
+
+      {showToast && (
+        <Toast
+          message={`🎉 ${results.length}개 파일 변환이 완료되었습니다!`}
+          type="success"
+          onClose={dismissToast}
         />
       )}
     </div>

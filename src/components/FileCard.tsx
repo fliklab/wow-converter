@@ -6,20 +6,45 @@ interface FileCardProps {
   type: "uploaded" | "result";
   imageFile: ImageFile;
   result?: ConversionResult;
+  onRemoveFile: (fileId: string) => void;
+}
+
+interface ImageMetadata {
+  width: number;
+  height: number;
+  type: string;
+  size: number;
+  lastModified: number;
 }
 
 export const FileCard: React.FC<FileCardProps> = ({
   type,
   imageFile,
   result,
+  onRemoveFile,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [metadata, setMetadata] = useState<ImageMetadata | null>(null);
 
-  // 파일 미리보기 URL 생성
+  // 파일 미리보기 URL 및 메타데이터 생성
   React.useEffect(() => {
     const url = URL.createObjectURL(imageFile.file);
     setPreviewUrl(url);
+
+    // 이미지 메타데이터 추출
+    const img = new Image();
+    img.onload = () => {
+      setMetadata({
+        width: img.width,
+        height: img.height,
+        type: imageFile.file.type,
+        size: imageFile.file.size,
+        lastModified: imageFile.file.lastModified,
+      });
+    };
+    img.src = url;
+
     return () => URL.revokeObjectURL(url);
   }, [imageFile.file]);
 
@@ -27,6 +52,10 @@ export const FileCard: React.FC<FileCardProps> = ({
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const formatDate = (timestamp: number): string => {
+    return new Date(timestamp).toLocaleString("ko-KR");
   };
 
   const handleDownload = () => {
@@ -39,8 +68,20 @@ export const FileCard: React.FC<FileCardProps> = ({
     return filename.split(".").pop()?.toUpperCase() || "";
   };
 
+  const getCompressionRate = (): number => {
+    if (!result) return 0;
+    return (1 - result.convertedSize / result.originalSize) * 100;
+  };
+
+  const handleCardClick = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   return (
-    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
+    <div
+      className="bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 p-4 cursor-pointer"
+      onClick={handleCardClick}
+    >
       <div className="flex items-start gap-4">
         {/* 썸네일 */}
         <div className="flex-shrink-0">
@@ -75,7 +116,34 @@ export const FileCard: React.FC<FileCardProps> = ({
                 ? result.convertedName
                 : imageFile.file.name}
             </h3>
-            <div className="flex items-center gap-2 ml-4">
+            <div
+              className="flex items-center gap-2 ml-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* 제거 버튼 */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemoveFile(imageFile.id);
+                }}
+                className="p-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                title="파일 제거"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </button>
+
               {/* 다운로드 버튼 (변환 결과일 때만) */}
               {type === "result" && result && (
                 <button
@@ -101,7 +169,10 @@ export const FileCard: React.FC<FileCardProps> = ({
 
               {/* 확장/축소 버튼 */}
               <button
-                onClick={() => setIsExpanded(!isExpanded)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsExpanded(!isExpanded);
+                }}
                 className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
               >
                 <svg
@@ -124,31 +195,52 @@ export const FileCard: React.FC<FileCardProps> = ({
           </div>
 
           <div className="flex items-center gap-4 mt-1 text-sm text-gray-500 dark:text-gray-400">
-            <span className="font-medium">
-              {type === "result" && result
-                ? getFileExtension(result.convertedName)
-                : getFileExtension(imageFile.file.name)}
-            </span>
-            <span>•</span>
-            <span>
-              {type === "result" && result
-                ? formatFileSize(result.convertedSize)
-                : formatFileSize(imageFile.file.size)}
-            </span>
+            {type === "result" && result ? (
+              <>
+                <span className="font-bold text-green-600 dark:text-green-400">
+                  변환 완료({getCompressionRate().toFixed(1)}% 감소)
+                </span>
+                <span>•</span>
+                <span className="font-medium">
+                  {result.format.toUpperCase()}
+                </span>
+                <span>•</span>
+                <span>{formatFileSize(result.convertedSize)}</span>
+              </>
+            ) : (
+              <>
+                <span className="font-medium">
+                  {getFileExtension(imageFile.file.name)}
+                </span>
+                <span>•</span>
+                <span>{formatFileSize(imageFile.file.size)}</span>
+                {metadata && (
+                  <>
+                    <span>•</span>
+                    <span>
+                      {metadata.width}×{metadata.height}
+                    </span>
+                  </>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
 
       {/* 확장된 정보 */}
       {isExpanded && (
-        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div
+          className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* 원본 파일 정보 */}
             <div>
-              <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-3">
                 원본 파일 정보
               </h4>
-              <div className="space-y-1 text-sm">
+              <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500 dark:text-gray-400">
                     파일명:
@@ -170,19 +262,55 @@ export const FileCard: React.FC<FileCardProps> = ({
                     파일 형식:
                   </span>
                   <span className="text-gray-900 dark:text-white">
-                    {getFileExtension(imageFile.file.name)}
+                    {imageFile.file.type}
                   </span>
                 </div>
+                {metadata && (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500 dark:text-gray-400">
+                        해상도:
+                      </span>
+                      <span className="text-gray-900 dark:text-white">
+                        {metadata.width} × {metadata.height} px
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500 dark:text-gray-400">
+                        종횡비:
+                      </span>
+                      <span className="text-gray-900 dark:text-white">
+                        {(metadata.width / metadata.height).toFixed(2)}:1
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500 dark:text-gray-400">
+                        총 픽셀:
+                      </span>
+                      <span className="text-gray-900 dark:text-white">
+                        {(metadata.width * metadata.height).toLocaleString()} px
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500 dark:text-gray-400">
+                        수정일:
+                      </span>
+                      <span className="text-gray-900 dark:text-white">
+                        {formatDate(metadata.lastModified)}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
             {/* 변환된 파일 정보 (변환 결과일 때만) */}
             {type === "result" && result && (
               <div>
-                <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-3">
                   변환된 파일 정보
                 </h4>
-                <div className="space-y-1 text-sm">
+                <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-500 dark:text-gray-400">
                       파일명:
@@ -204,19 +332,25 @@ export const FileCard: React.FC<FileCardProps> = ({
                       파일 형식:
                     </span>
                     <span className="text-gray-900 dark:text-white">
-                      {result.format.toUpperCase()}
+                      image/{result.format}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500 dark:text-gray-400">
                       압축률:
                     </span>
-                    <span className="text-green-600 dark:text-green-400">
-                      {(
-                        (1 - result.convertedSize / result.originalSize) *
-                        100
-                      ).toFixed(1)}
-                      % 감소
+                    <span className="text-green-600 dark:text-green-400 font-medium">
+                      {getCompressionRate().toFixed(1)}% 감소
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">
+                      절약된 용량:
+                    </span>
+                    <span className="text-green-600 dark:text-green-400 font-medium">
+                      {formatFileSize(
+                        result.originalSize - result.convertedSize
+                      )}
                     </span>
                   </div>
                 </div>

@@ -5,9 +5,14 @@ import { FileCard } from "./FileCard";
 interface ResultsProps {
   files: ImageFile[];
   results: ConversionResult[];
+  onRemoveFile: (fileId: string) => void;
 }
 
-export const Results: React.FC<ResultsProps> = ({ files, results }) => {
+export const Results: React.FC<ResultsProps> = ({
+  files,
+  results,
+  onRemoveFile,
+}) => {
   // 변환 결과가 있으면 결과를 표시, 없으면 업로드된 파일들을 표시
   const hasResults = results.length > 0;
 
@@ -25,6 +30,7 @@ export const Results: React.FC<ResultsProps> = ({ files, results }) => {
               type="result"
               imageFile={result.originalFile}
               result={result}
+              onRemoveFile={onRemoveFile}
             />
           ))}
         </div>
@@ -35,6 +41,7 @@ export const Results: React.FC<ResultsProps> = ({ files, results }) => {
               key={imageFile.id}
               type="uploaded"
               imageFile={imageFile}
+              onRemoveFile={onRemoveFile}
             />
           ))}
         </div>

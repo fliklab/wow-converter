@@ -31,6 +31,7 @@ export const useImageConverter = () => {
   const [files, setFiles] = useState<ImageFile[]>([]);
   const [results, setResults] = useState<ConversionResult[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showToast, setShowToast] = useState(false);
   const [settings, setSettings] = useState<ConversionSettings>({
     format: "jpeg",
     quality: 75,
@@ -79,6 +80,7 @@ export const useImageConverter = () => {
       }
 
       setResults(newResults);
+      setShowToast(true);
     } catch (err) {
       console.error("이미지 변환 중 오류 발생:", err);
       setError(
@@ -105,16 +107,31 @@ export const useImageConverter = () => {
     setError(null);
   }, []);
 
+  const handleRemoveFile = useCallback((fileId: string) => {
+    setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
+    // 만약 변환 결과에서도 해당 파일이 있다면 제거
+    setResults((prevResults) =>
+      prevResults.filter((result) => result.originalFile.id !== fileId)
+    );
+  }, []);
+
+  const dismissToast = useCallback(() => {
+    setShowToast(false);
+  }, []);
+
   return {
     isConverting,
     files,
     results,
     error,
+    showToast,
     settings,
     setSettings,
     onDrop,
     handleConvert,
     handleDownloadAll,
     handleClear,
+    handleRemoveFile,
+    dismissToast,
   };
 };
