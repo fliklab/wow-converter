@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useImageConverter } from "../hooks/useImageConverter";
 import { ImageFormat } from "../utils/imageProcessor";
 import { Dropzone } from "./Dropzone";
@@ -22,6 +22,12 @@ export const ImageConverter: React.FC = () => {
     handleRemoveFile,
     dismissToast,
   } = useImageConverter();
+
+  useEffect(() => {
+    if (files.length > 0) {
+      handleConvert();
+    }
+  }, [files, handleConvert]);
 
   const handleControlPanelSubmit = (options: {
     outputFormat: string;
