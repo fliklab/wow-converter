@@ -1,10 +1,12 @@
 import React from "react";
-import { ConversionSettings } from "../hooks/useImageConverter";
+import { UserConversionSettings } from "../hooks/useImageConverter";
 import { ImageFormat } from "../utils/imageProcessor";
 
 interface SettingsPanelProps {
-  settings: ConversionSettings;
-  onSettingsChange: React.Dispatch<React.SetStateAction<ConversionSettings>>;
+  settings: UserConversionSettings;
+  onSettingsChange: React.Dispatch<
+    React.SetStateAction<UserConversionSettings>
+  >;
 }
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
@@ -22,9 +24,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             min="0"
             max="100"
             disabled
-            value={settings.quality}
+            value={settings.qualityLevel}
             onChange={(e) =>
-              onSettingsChange((prev) => ({
+              onSettingsChange((prev: UserConversionSettings) => ({
                 ...prev,
                 quality: Number(e.target.value),
               }))
@@ -37,7 +39,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           <select
             value={settings.format}
             onChange={(e) =>
-              onSettingsChange((prev) => ({
+              onSettingsChange((prev: UserConversionSettings) => ({
                 ...prev,
                 format: e.target.value as ImageFormat,
               }))

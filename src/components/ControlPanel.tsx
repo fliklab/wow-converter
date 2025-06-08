@@ -1,13 +1,11 @@
 import React, { useState } from "react";
+import type {
+  QualityLevel,
+  UserConversionSettings,
+} from "../hooks/useImageConverter";
 
 interface ControlPanelProps {
-  onSubmit: (options: {
-    outputFormat: string;
-    quality: string;
-    width: number | null;
-    rename: boolean;
-    removeMetadata: boolean;
-  }) => void;
+  onSubmit: (options: UserConversionSettings) => void;
   onDownloadAll: () => void;
   onClearList: () => void;
   isConverting: boolean;
@@ -25,8 +23,11 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   hasResults,
   hasFiles,
 }) => {
-  const [outputFormat, setOutputFormat] = useState("jpg");
-  const [quality, setQuality] = useState("original");
+  const [outputFormat, setOutputFormat] = useState<
+    "jpeg" | "png" | "webp" | "avif"
+  >("jpeg");
+  const [qualityLevel, setQualityLevel] = useState<QualityLevel>("original");
+  const [lossless, setLossless] = useState(false);
   const [width, setWidth] = useState<number | null>(null);
   const [rename, setRename] = useState(false);
   const [removeMetadata, setRemoveMetadata] = useState(false);
@@ -34,7 +35,12 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   const predefinedWidths = [200, 400, 640, 860, 1024];
 
   const handleSubmit = () => {
-    onSubmit({ outputFormat, quality, width, rename, removeMetadata });
+    onSubmit({
+      format: outputFormat,
+      qualityLevel,
+      lossless,
+      width,
+    });
   };
 
   const handleWidthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,19 +56,20 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             출력 형식:
             <select
               value={outputFormat}
-              onChange={(e) => setOutputFormat(e.target.value)}
+              onChange={(e) => setOutputFormat(e.target.value as any)}
               className="px-2 py-1 border border-gray-300 dark:border-border rounded bg-white dark:bg-card text-gray-900 dark:text-text-primary focus:ring-2 focus:ring-primary/50 outline-none"
             >
-              <option value="jpg">JPG</option>
+              <option value="jpeg">JPG</option>
               <option value="png">PNG</option>
               <option value="webp">WebP</option>
+              <option value="avif">AVIF</option>
             </select>
           </label>
           <label className="flex items-center gap-2 text-gray-700 dark:text-text-primary">
             품질:
             <select
-              value={quality}
-              onChange={(e) => setQuality(e.target.value)}
+              value={qualityLevel}
+              onChange={(e) => setQualityLevel(e.target.value as QualityLevel)}
               className="px-2 py-1 border border-gray-300 dark:border-border rounded bg-white dark:bg-card text-gray-900 dark:text-text-primary focus:ring-2 focus:ring-primary/50 outline-none"
             >
               <option value="original">원본 그대로</option>
@@ -102,6 +109,15 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         </div>
 
         <div className="flex gap-4 flex-wrap">
+          <label className="flex items-center gap-2 text-gray-700 dark:text-text-primary cursor-pointer">
+            <input
+              type="checkbox"
+              checked={lossless}
+              onChange={(e) => setLossless(e.target.checked)}
+              className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
+            />
+            무손실(가능한 포맷만)
+          </label>
           <label className="flex items-center gap-2 text-gray-700 dark:text-text-primary cursor-pointer">
             <input
               type="checkbox"

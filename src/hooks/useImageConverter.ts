@@ -2,14 +2,19 @@ import { useCallback, useState } from "react";
 import {
   processImage,
   ImageFormat,
-  EncodeOptions,
+  // EncodeOptions,
+  CompressionMode,
 } from "../utils/imageProcessor";
 import { downloadFile } from "../utils/file";
 
-export interface ConversionSettings {
-  format: ImageFormat;
-  quality: number;
+export type QualityLevel = "original" | "high" | "medium" | "low";
+
+export interface UserConversionSettings {
+  format: "jpeg" | "webp" | "avif" | "png";
+  qualityLevel: QualityLevel;
+  lossless: boolean;
   width: number | null;
+  compressionMode?: CompressionMode;
 }
 
 export interface ImageFile {
@@ -32,10 +37,12 @@ export const useImageConverter = () => {
   const [results, setResults] = useState<ConversionResult[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
-  const [settings, setSettings] = useState<ConversionSettings>({
+  const [settings, setSettings] = useState<UserConversionSettings>({
     format: "jpeg",
-    quality: 75,
+    qualityLevel: "high",
+    lossless: false,
     width: null,
+    compressionMode: "normal",
   });
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -43,8 +50,83 @@ export const useImageConverter = () => {
       file,
       id: `${file.name}-${file.lastModified}`,
     }));
+    console.log("onDrop", acceptedFiles);
     setFiles((prevFiles) => [...prevFiles, ...newImageFiles]);
   }, []);
+
+  function mapUserSettingsToEncodeOptions(user: UserConversionSettings) {
+    const compressionMode: CompressionMode = user.compressionMode || "normal";
+    switch (user.format) {
+      case "jpeg": {
+        const options: import("../utils/imageProcessor").JpegEncodeOptions = {};
+        if (user.qualityLevel !== "original") {
+          options.quality =
+            user.qualityLevel === "high"
+              ? 90
+              : user.qualityLevel === "medium"
+              ? 75
+              : 50;
+        }
+        // progressive: 고압축일 때만 true
+        options.progressive = compressionMode === "max";
+        return { format: "jpeg", options } as const;
+      }
+      case "webp": {
+        const options: import("../utils/imageProcessor").WebpEncodeOptions = {};
+        if (user.lossless) {
+          options.lossless = true;
+        } else if (user.qualityLevel !== "original") {
+          options.quality =
+            user.qualityLevel === "high"
+              ? 90
+              : user.qualityLevel === "medium"
+              ? 75
+              : 50;
+        }
+        // method: 0(빠름), 4(보통), 6(최고압축)
+        options.method =
+          compressionMode === "fast" ? 0 : compressionMode === "normal" ? 4 : 6;
+        return { format: "webp", options } as const;
+      }
+      case "avif": {
+        const options: import("../utils/imageProcessor").AvifEncodeOptions = {};
+        if (user.lossless) {
+          options.cqLevel = 0;
+        } else if (user.qualityLevel !== "original") {
+          options.cqLevel =
+            user.qualityLevel === "high"
+              ? 20
+              : user.qualityLevel === "medium"
+              ? 33
+              : 50;
+        }
+        // speed: 10(빠름), 6(보통), 0(최고압축)
+        options.speed =
+          compressionMode === "fast"
+            ? 10
+            : compressionMode === "normal"
+            ? 6
+            : 0;
+        return { format: "avif", options } as const;
+      }
+      case "png": {
+        const options: import("../utils/imageProcessor").PngEncodeOptions = {};
+        if (user.lossless) {
+          options.compressionLevel = 9;
+        } else {
+          options.compressionLevel =
+            compressionMode === "fast"
+              ? 1
+              : compressionMode === "normal"
+              ? 6
+              : 9;
+        }
+        return { format: "png", options } as const;
+      }
+      default:
+        throw new Error("지원하지 않는 포맷");
+    }
+  }
 
   const handleConvert = useCallback(async () => {
     try {
@@ -52,18 +134,15 @@ export const useImageConverter = () => {
       setIsConverting(true);
 
       const newResults: ConversionResult[] = [];
-      const encodeOptions: EncodeOptions = {
-        [settings.format]: { quality: settings.quality },
-      };
+      const encodeOptions = mapUserSettingsToEncodeOptions(settings);
 
       for (const imageFile of files) {
         const result = await processImage(
           imageFile.file,
-          settings.format,
           encodeOptions,
           settings.width
         );
-        const extension = settings.format;
+        const extension = encodeOptions.format;
         const convertedName = `${imageFile.file.name
           .split(".")
           .slice(0, -1)
@@ -73,7 +152,7 @@ export const useImageConverter = () => {
           originalFile: imageFile,
           convertedBlob: result.blob,
           convertedName,
-          format: settings.format,
+          format: encodeOptions.format,
           originalSize: imageFile.file.size,
           convertedSize: result.blob.size,
         });

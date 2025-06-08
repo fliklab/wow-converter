@@ -10,13 +10,21 @@ export type ImageFormat = "jpeg" | "webp" | "avif" | "png";
 // 지원하는 MIME 타입을 정의합니다.
 type MimeType = "image/jpeg" | "image/png" | "image/webp" | "image/avif";
 
-// 실용적인 인코딩 옵션 타입 정의
-export type EncodeOptions = {
-  jpeg?: { quality?: number };
-  webp?: { quality?: number };
-  avif?: { quality?: number };
-  png?: { quality?: number };
+// 1. 포맷별 옵션 타입 정의
+export type JpegEncodeOptions = { quality?: number; progressive?: boolean };
+export type WebpEncodeOptions = {
+  quality?: number;
+  lossless?: boolean;
+  method?: number;
 };
+export type AvifEncodeOptions = { cqLevel?: number; speed?: number };
+export type PngEncodeOptions = { compressionLevel?: number };
+
+export type EncodeOptions =
+  | { format: "jpeg"; options?: JpegEncodeOptions }
+  | { format: "webp"; options?: WebpEncodeOptions }
+  | { format: "avif"; options?: AvifEncodeOptions }
+  | { format: "png"; options?: PngEncodeOptions };
 
 // 이미지 처리 결과를 위한 인터페이스입니다.
 export interface ProcessingResult {
@@ -57,17 +65,49 @@ const decoders: Record<MimeType, (data: ArrayBuffer) => Promise<ImageData>> = {
   },
 };
 
+// 압축 모드 타입
+export type CompressionMode = "fast" | "normal" | "max";
+
+// 포맷별 압축 모드 기본값 상수
+export const DEFAULT_COMPRESSION_MODE: CompressionMode = "normal";
+
+export const WEBP_METHOD_BY_COMPRESSION: Record<CompressionMode, number> = {
+  fast: 0,
+  normal: 4,
+  max: 6,
+};
+
+export const AVIF_SPEED_BY_COMPRESSION: Record<CompressionMode, number> = {
+  fast: 10,
+  normal: 6,
+  max: 0,
+};
+
+export const PNG_COMPRESSION_LEVEL_BY_COMPRESSION: Record<
+  CompressionMode,
+  number
+> = {
+  fast: 1,
+  normal: 6,
+  max: 9,
+};
+
+export const JPEG_PROGRESSIVE_BY_COMPRESSION: Record<CompressionMode, boolean> =
+  {
+    fast: false,
+    normal: false,
+    max: true,
+  };
+
 /**
  * jSquash 라이브러리를 사용하여 이미지를 처리합니다.
  * @param file 처리할 이미지 파일
- * @param format 처리할 이미지 포맷
  * @param encodeOptions 인코딩 옵션
  * @param targetWidth 목표 이미지 너비
  * @returns 처리된 이미지 결과
  */
 export const processImage = async (
   file: File,
-  format: ImageFormat,
   encodeOptions: EncodeOptions,
   targetWidth: number | null
 ): Promise<ProcessingResult> => {
@@ -89,15 +129,20 @@ export const processImage = async (
       });
     }
 
-    const encode = encoders[format];
-
-    // 인코더에 옵션을 전달하지 않고 기본 인코딩 사용
-    // TODO: 품질 옵션은 추후 각 라이브러리의 정확한 API 확인 후 구현
-    const encodedData = await encode(imageData);
+    const encode = encoders[encodeOptions.format] as (
+      imageData: ImageData,
+      options?: any
+    ) => Promise<ArrayBuffer>;
+    let encodedData: ArrayBuffer;
+    if (encodeOptions.options) {
+      encodedData = await encode(imageData, encodeOptions.options);
+    } else {
+      encodedData = await encode(imageData);
+    }
 
     return {
-      blob: new Blob([encodedData], { type: `image/${format}` }),
-      format: format,
+      blob: new Blob([encodedData], { type: `image/${encodeOptions.format}` }),
+      format: encodeOptions.format,
       size: encodedData.byteLength,
     };
   } catch (error) {

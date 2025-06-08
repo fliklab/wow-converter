@@ -6,6 +6,7 @@ import { Results } from "./Results";
 import { ErrorDisplay } from "./ErrorDisplay";
 import { Toast } from "./Toast";
 import ControlPanel from "./ControlPanel";
+import type { UserConversionSettings } from "../hooks/useImageConverter";
 
 export const ImageConverter: React.FC = () => {
   const {
@@ -25,42 +26,14 @@ export const ImageConverter: React.FC = () => {
 
   useEffect(() => {
     if (files.length > 0) {
+      console.log("useEffect", files);
       handleConvert();
     }
   }, [files, handleConvert]);
 
-  const handleControlPanelSubmit = (options: {
-    outputFormat: string;
-    quality: string;
-    width: number | null;
-    rename: boolean;
-    removeMetadata: boolean;
-  }) => {
-    // 포맷 매핑 (jpg -> jpeg)
-    const formatMapping: Record<string, ImageFormat> = {
-      jpg: "jpeg",
-      jpeg: "jpeg",
-      png: "png",
-      webp: "webp",
-      avif: "avif",
-    };
-
-    // 품질 매핑
-    const qualityMapping: Record<string, number> = {
-      original: 100,
-      high: 90,
-      medium: 75,
-      low: 60,
-    };
-
-    // 설정 업데이트
-    setSettings({
-      format: formatMapping[options.outputFormat] || "jpeg",
-      quality: qualityMapping[options.quality] || 75,
-      width: options.width,
-    });
-
-    // 변환 시작
+  const handleControlPanelSubmit = (options: UserConversionSettings) => {
+    console.log("handleControlPanelSubmit", options);
+    setSettings(options);
     handleConvert();
   };
 
