@@ -17,24 +17,21 @@ export const ImageConverter: React.FC = () => {
     showToast,
     setSettings,
     onDrop,
-    handleConvert,
+    handleConvertWithSettings,
     handleDownloadAll,
     handleClear,
     handleRemoveFile,
     dismissToast,
   } = useImageConverter();
 
-  useEffect(() => {
-    if (files.length > 0) {
-      console.log("useEffect", files);
-      handleConvert();
-    }
-  }, [files, handleConvert]);
-
   const handleControlPanelSubmit = (options: UserConversionSettings) => {
     console.log("handleControlPanelSubmit", options);
-    setSettings(options);
-    handleConvert();
+    setSettings(() => {
+      const newSettings = { ...options };
+      handleConvertWithSettings(newSettings);
+      return newSettings;
+    });
+    handleConvertWithSettings(options);
   };
 
   return (

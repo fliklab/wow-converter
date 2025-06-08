@@ -128,19 +128,21 @@ export const useImageConverter = () => {
     }
   }
 
-  const handleConvert = useCallback(async () => {
+  const handleConvertWithSettings = async (
+    customSettings: UserConversionSettings
+  ) => {
     try {
       setError(null);
       setIsConverting(true);
 
       const newResults: ConversionResult[] = [];
-      const encodeOptions = mapUserSettingsToEncodeOptions(settings);
+      const encodeOptions = mapUserSettingsToEncodeOptions(customSettings);
 
       for (const imageFile of files) {
         const result = await processImage(
           imageFile.file,
           encodeOptions,
-          settings.width
+          customSettings.width
         );
         const extension = encodeOptions.format;
         const convertedName = `${imageFile.file.name
@@ -170,7 +172,7 @@ export const useImageConverter = () => {
     } finally {
       setIsConverting(false);
     }
-  }, [files, settings]);
+  };
 
   const handleDownloadAll = useCallback(() => {
     if (results.length === 0) return;
@@ -207,7 +209,7 @@ export const useImageConverter = () => {
     settings,
     setSettings,
     onDrop,
-    handleConvert,
+    handleConvertWithSettings,
     handleDownloadAll,
     handleClear,
     handleRemoveFile,
