@@ -1,14 +1,25 @@
 import { useCallback, useState } from "react";
-import { processImage, ImageFormat } from "../utils/imageProcessor";
+import {
+  processImage,
+  ImageFormat,
+  EncodeOptions,
+} from "../utils/imageProcessor";
 import { downloadFile } from "../utils/file";
 
 export interface ConversionSettings {
   format: ImageFormat;
   quality: number;
+  width: number | null;
+}
+
+export interface ImageFile {
+  file: File;
+  id: string;
 }
 
 export interface ConversionResult {
-  originalName: string;
+  originalFile: ImageFile;
+  convertedBlob: Blob;
   convertedName: string;
   format: ImageFormat;
   originalSize: number;
@@ -17,64 +28,93 @@ export interface ConversionResult {
 
 export const useImageConverter = () => {
   const [isConverting, setIsConverting] = useState(false);
+  const [files, setFiles] = useState<ImageFile[]>([]);
   const [results, setResults] = useState<ConversionResult[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [settings, setSettings] = useState<ConversionSettings>({
-    quality: 75,
     format: "jpeg",
+    quality: 75,
+    width: null,
   });
 
-  const onDrop = useCallback(
-    async (acceptedFiles: File[]) => {
-      try {
-        setError(null);
-        setIsConverting(true);
-        const newResults: ConversionResult[] = [];
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    const newImageFiles = acceptedFiles.map((file) => ({
+      file,
+      id: `${file.name}-${file.lastModified}`,
+    }));
+    setFiles((prevFiles) => [...prevFiles, ...newImageFiles]);
+  }, []);
 
-        for (const file of acceptedFiles) {
-          const result = await processImage(file, {
-            quality: settings.quality,
-            format: settings.format,
-          });
+  const handleConvert = useCallback(async () => {
+    try {
+      setError(null);
+      setIsConverting(true);
 
-          const extension = result.format;
-          const convertedName = `${file.name
-            .split(".")
-            .slice(0, -1)
-            .join(".")}_converted.${extension}`;
+      const newResults: ConversionResult[] = [];
+      const encodeOptions: EncodeOptions = {
+        [settings.format]: { quality: settings.quality },
+      };
 
-          downloadFile(result.blob, convertedName);
+      for (const imageFile of files) {
+        const result = await processImage(
+          imageFile.file,
+          settings.format,
+          encodeOptions,
+          settings.width
+        );
+        const extension = settings.format;
+        const convertedName = `${imageFile.file.name
+          .split(".")
+          .slice(0, -1)
+          .join(".")}_converted.${extension}`;
 
-          newResults.push({
-            originalName: file.name,
-            convertedName,
-            format: result.format,
-            originalSize: file.size,
-            convertedSize: result.size,
-          });
-        }
-
-        setResults((prev) => [...prev, ...newResults]);
-      } catch (error) {
-        console.error("이미지 변환 중 오류 발생:", error);
-        if (error instanceof Error) {
-          setError(`변환 실패: ${error.message}`);
-        } else {
-          setError("알 수 없는 오류가 발생했습니다.");
-        }
-      } finally {
-        setIsConverting(false);
+        newResults.push({
+          originalFile: imageFile,
+          convertedBlob: result.blob,
+          convertedName,
+          format: settings.format,
+          originalSize: imageFile.file.size,
+          convertedSize: result.blob.size,
+        });
       }
-    },
-    [settings]
-  );
+
+      setResults(newResults);
+    } catch (err) {
+      console.error("이미지 변환 중 오류 발생:", err);
+      setError(
+        err instanceof Error
+          ? `변환 실패: ${err.message}`
+          : "알 수 없는 오류가 발생했습니다."
+      );
+    } finally {
+      setIsConverting(false);
+    }
+  }, [files, settings]);
+
+  const handleDownloadAll = useCallback(() => {
+    if (results.length === 0) return;
+
+    results.forEach((result) => {
+      downloadFile(result.convertedBlob, result.convertedName);
+    });
+  }, [results]);
+
+  const handleClear = useCallback(() => {
+    setFiles([]);
+    setResults([]);
+    setError(null);
+  }, []);
 
   return {
     isConverting,
+    files,
     results,
     error,
     settings,
     setSettings,
     onDrop,
+    handleConvert,
+    handleDownloadAll,
+    handleClear,
   };
 };

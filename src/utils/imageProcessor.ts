@@ -2,6 +2,7 @@ import { encode as encodeJpeg, decode as decodeJpeg } from "@jsquash/jpeg";
 import { encode as encodeWebp, decode as decodeWebp } from "@jsquash/webp";
 import { encode as encodeAvif, decode as decodeAvif } from "@jsquash/avif";
 import { encode as encodePng, decode as decodePng } from "@jsquash/png";
+import resize from "@jsquash/resize";
 
 // 지원하는 이미지 포맷 타입을 정의합니다.
 export type ImageFormat = "jpeg" | "webp" | "avif" | "png";
@@ -9,11 +10,13 @@ export type ImageFormat = "jpeg" | "webp" | "avif" | "png";
 // 지원하는 MIME 타입을 정의합니다.
 type MimeType = "image/jpeg" | "image/png" | "image/webp" | "image/avif";
 
-// 이미지 처리 옵션을 정의합니다.
-export interface ImageProcessingOptions {
-  format: ImageFormat;
-  quality?: number;
-}
+// 실용적인 인코딩 옵션 타입 정의
+export type EncodeOptions = {
+  jpeg?: { quality?: number };
+  webp?: { quality?: number };
+  avif?: { quality?: number };
+  png?: { quality?: number };
+};
 
 // 이미지 처리 결과를 위한 인터페이스입니다.
 export interface ProcessingResult {
@@ -33,59 +36,76 @@ const encoders = {
 // 디코더의 반환 타입 문제를 해결하기 위해, 반환값을 검사하는 Wrapper 함수를 사용합니다.
 const decoders: Record<MimeType, (data: ArrayBuffer) => Promise<ImageData>> = {
   "image/jpeg": async (data) => {
-    const imageData = await decodeJpeg(data);
-    if (!imageData) throw new Error("JPEG 디코딩 실패");
-    return imageData;
+    const result = await decodeJpeg(data);
+    if (!result) throw new Error("JPEG 디코딩 실패");
+    return result;
   },
   "image/png": async (data) => {
-    const imageData = await decodePng(data);
-    if (!imageData) throw new Error("PNG 디코딩 실패");
-    return imageData;
+    const result = await decodePng(data);
+    if (!result) throw new Error("PNG 디코딩 실패");
+    return result;
   },
   "image/webp": async (data) => {
-    const imageData = await decodeWebp(data);
-    if (!imageData) throw new Error("WebP 디코딩 실패");
-    return imageData;
+    const result = await decodeWebp(data);
+    if (!result) throw new Error("WebP 디코딩 실패");
+    return result;
   },
   "image/avif": async (data) => {
-    const imageData = await decodeAvif(data);
-    if (!imageData) throw new Error("AVIF 디코딩 실패");
-    return imageData;
+    const result = await decodeAvif(data);
+    if (!result) throw new Error("AVIF 디코딩 실패");
+    return result;
   },
 };
 
 /**
  * jSquash 라이브러리를 사용하여 이미지를 처리합니다.
  * @param file 처리할 이미지 파일
- * @param options 처리 옵션 (포맷, 품질 등)
+ * @param format 처리할 이미지 포맷
+ * @param encodeOptions 인코딩 옵션
+ * @param targetWidth 목표 이미지 너비
  * @returns 처리된 이미지 결과
  */
 export const processImage = async (
   file: File,
-  options: ImageProcessingOptions
+  format: ImageFormat,
+  encodeOptions: EncodeOptions,
+  targetWidth: number | null
 ): Promise<ProcessingResult> => {
   try {
     const arrayBuffer = await file.arrayBuffer();
-
     const decoder = decoders[file.type as MimeType];
     if (!decoder) {
       throw new Error(`지원하지 않는 파일 형식입니다: ${file.type}`);
     }
-    const imageData = await decoder(arrayBuffer);
+    let imageData = await decoder(arrayBuffer);
 
-    const encode = encoders[options.format];
+    // 이미지 리사이즈 처리
+    if (targetWidth && imageData.width > targetWidth) {
+      const aspectRatio = imageData.height / imageData.width;
+      const targetHeight = Math.round(targetWidth * aspectRatio);
+      imageData = await resize(imageData, {
+        width: targetWidth,
+        height: targetHeight,
+      });
+    }
 
-    // TODO: jSquash 라이브러리에서 인코딩 품질을 설정하는 방법을 확인 필요.
-    // 현재는 기본 옵션으로만 인코딩.
+    const encode = encoders[format];
+
+    // 인코더에 옵션을 전달하지 않고 기본 인코딩 사용
+    // TODO: 품질 옵션은 추후 각 라이브러리의 정확한 API 확인 후 구현
     const encodedData = await encode(imageData);
 
     return {
-      blob: new Blob([encodedData], { type: `image/${options.format}` }),
-      format: options.format,
+      blob: new Blob([encodedData], { type: `image/${format}` }),
+      format: format,
       size: encodedData.byteLength,
     };
   } catch (error) {
     console.error("이미지 처리 중 오류 발생:", error);
-    throw new Error("이미지 처리 실패");
+    throw new Error(
+      `이미지 처리 실패: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
   }
 };
