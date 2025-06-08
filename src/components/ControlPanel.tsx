@@ -12,6 +12,8 @@ interface ControlPanelProps {
   onClearList: () => void;
   isConverting: boolean;
   progress: number;
+  hasResults?: boolean;
+  hasFiles?: boolean;
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -20,6 +22,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   onClearList,
   isConverting,
   progress,
+  hasResults,
+  hasFiles,
 }) => {
   const [outputFormat, setOutputFormat] = useState("jpg");
   const [quality, setQuality] = useState("original");
@@ -136,20 +140,24 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         >
           변환 시작
         </button>
-        <button
-          onClick={onDownloadAll}
-          disabled={isConverting}
-          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          모두 다운로드
-        </button>
-        <button
-          onClick={onClearList}
-          disabled={isConverting}
-          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          리스트 비우기
-        </button>
+        {hasResults && (
+          <button
+            onClick={onDownloadAll}
+            disabled={isConverting}
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            모두 다운로드
+          </button>
+        )}
+        {hasFiles && (
+          <button
+            onClick={onClearList}
+            disabled={isConverting}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            리스트 비우기
+          </button>
+        )}
       </div>
     </div>
   );
