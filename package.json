@@ -12,6 +12,7 @@
     "@types/node": "^16.18.119",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "exif-js": "^2.3.0",
     "exifreader": "^4.25.0",
     "file-saver": "^2.0.5",
     "jszip": "^3.10.1",
@@ -46,6 +47,7 @@
     ]
   },
   "devDependencies": {
+    "@types/exif-js": "^2.3.1",
     "@types/jszip": "^3.4.1",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",
