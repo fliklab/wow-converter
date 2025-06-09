@@ -68,7 +68,7 @@ const decoders: Record<MimeType, (data: ArrayBuffer) => Promise<ImageData>> = {
 export const processImage = async (
   file: File,
   format: ImageFormat,
-  encodeOptions: EncodeOptions,
+  _encodeOptions: EncodeOptions,
   targetWidth: number | null
 ): Promise<ProcessingResult> => {
   try {
