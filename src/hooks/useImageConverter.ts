@@ -42,7 +42,7 @@ export const useImageConverter = () => {
     qualityLevel: "high",
     lossless: false,
     width: null,
-    compressionMode: "normal",
+    compressionMode: "max",
   });
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -55,7 +55,7 @@ export const useImageConverter = () => {
   }, []);
 
   function mapUserSettingsToEncodeOptions(user: UserConversionSettings) {
-    const compressionMode: CompressionMode = user.compressionMode || "normal";
+    const compressionMode: CompressionMode = user.compressionMode || "max";
     switch (user.format) {
       case "jpeg": {
         const options: import("../utils/imageProcessor").JpegEncodeOptions = {};

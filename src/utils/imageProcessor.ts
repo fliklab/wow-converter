@@ -69,7 +69,7 @@ const decoders: Record<MimeType, (data: ArrayBuffer) => Promise<ImageData>> = {
 export type CompressionMode = "fast" | "normal" | "max";
 
 // 포맷별 압축 모드 기본값 상수
-export const DEFAULT_COMPRESSION_MODE: CompressionMode = "normal";
+export const DEFAULT_COMPRESSION_MODE: CompressionMode = "max";
 
 export const WEBP_METHOD_BY_COMPRESSION: Record<CompressionMode, number> = {
   fast: 0,
