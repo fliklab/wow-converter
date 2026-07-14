@@ -95,7 +95,7 @@ export const Dropzone: React.FC<DropzoneProps> = ({ onDrop, isConverting }) => {
 
         {/* Supported Formats */}
         <p className="text-xs text-gray-400 dark:text-gray-500">
-          지원 형식: JPG, PNG, WebP
+          지원 형식: JPG, PNG, WebP, AVIF
         </p>
       </div>
     </div>

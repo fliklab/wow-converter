@@ -6,7 +6,6 @@ interface ControlPanelProps {
     quality: string;
     width: number | null;
     rename: boolean;
-    removeMetadata: boolean;
   }) => void;
   onDownloadAll: () => void;
   onClearList: () => void;
@@ -29,12 +28,11 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   const [quality, setQuality] = useState("original");
   const [width, setWidth] = useState<number | null>(null);
   const [rename, setRename] = useState(false);
-  const [removeMetadata, setRemoveMetadata] = useState(false);
 
   const predefinedWidths = [200, 400, 640, 860, 1024];
 
   const handleSubmit = () => {
-    onSubmit({ outputFormat, quality, width, rename, removeMetadata });
+    onSubmit({ outputFormat, quality, width, rename });
   };
 
   const handleWidthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,6 +54,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               <option value="jpg">JPG</option>
               <option value="png">PNG</option>
               <option value="webp">WebP</option>
+              <option value="avif">AVIF</option>
             </select>
           </label>
           <label className="flex items-center gap-2 text-gray-700 dark:text-text-primary">
@@ -63,9 +62,10 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             <select
               value={quality}
               onChange={(e) => setQuality(e.target.value)}
+              disabled={outputFormat === "png"}
               className="px-2 py-1 border border-gray-300 dark:border-border rounded bg-white dark:bg-card text-gray-900 dark:text-text-primary focus:ring-2 focus:ring-primary/50 outline-none"
             >
-              <option value="original">원본 그대로</option>
+              <option value="original">최고 품질</option>
               <option value="high">높은 품질</option>
               <option value="medium">중간 품질</option>
               <option value="low">낮은 품질</option>
@@ -111,14 +111,14 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             />
             파일 이름 초기화
           </label>
-          <label className="flex items-center gap-2 text-gray-700 dark:text-text-primary cursor-pointer">
+          <label className="flex items-center gap-2 text-gray-500 dark:text-text-secondary">
             <input
               type="checkbox"
-              checked={removeMetadata}
-              onChange={(e) => setRemoveMetadata(e.target.checked)}
+              checked
+              disabled
               className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
             />
-            메타데이터 제거
+            메타데이터 제거 (항상 적용)
           </label>
         </div>
       </div>

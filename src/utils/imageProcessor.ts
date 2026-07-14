@@ -25,14 +25,6 @@ export interface ProcessingResult {
   size: number;
 }
 
-// 각 포맷에 맞는 인코더/디코더 함수를 매핑합니다.
-const encoders = {
-  jpeg: encodeJpeg,
-  webp: encodeWebp,
-  avif: encodeAvif,
-  png: encodePng,
-};
-
 // 디코더의 반환 타입 문제를 해결하기 위해, 반환값을 검사하는 Wrapper 함수를 사용합니다.
 const decoders: Record<MimeType, (data: ArrayBuffer) => Promise<ImageData>> = {
   "image/jpeg": async (data) => {
@@ -89,11 +81,23 @@ export const processImage = async (
       });
     }
 
-    const encode = encoders[format];
+    const quality = _encodeOptions[format]?.quality;
+    let encodedData: ArrayBuffer;
 
-    // 인코더에 옵션을 전달하지 않고 기본 인코딩 사용
-    // TODO: 품질 옵션은 추후 각 라이브러리의 정확한 API 확인 후 구현
-    const encodedData = await encode(imageData);
+    switch (format) {
+      case "jpeg":
+        encodedData = await encodeJpeg(imageData, { quality });
+        break;
+      case "webp":
+        encodedData = await encodeWebp(imageData, { quality });
+        break;
+      case "avif":
+        encodedData = await encodeAvif(imageData, { quality });
+        break;
+      case "png":
+        encodedData = await encodePng(imageData);
+        break;
+    }
 
     return {
       blob: new Blob([encodedData], { type: `image/${format}` }),

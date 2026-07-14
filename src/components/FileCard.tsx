@@ -218,6 +218,12 @@ export const FileCard: React.FC<FileCardProps> = ({
     return (1 - result.convertedSize / result.originalSize) * 100;
   };
 
+  const compressionRate = getCompressionRate();
+  const isSmaller = compressionRate >= 0;
+  const sizeDifference = result
+    ? Math.abs(result.originalSize - result.convertedSize)
+    : 0;
+
   const handleCardClick = () => {
     setIsExpanded(!isExpanded);
   };
@@ -342,8 +348,15 @@ export const FileCard: React.FC<FileCardProps> = ({
           <div className="flex items-center gap-4 mt-1 text-sm text-gray-500 dark:text-gray-400">
             {type === "result" && result ? (
               <>
-                <span className="font-bold text-green-600 dark:text-green-400">
-                  변환 완료({getCompressionRate().toFixed(1)}% 감소)
+                <span
+                  className={`font-bold ${
+                    isSmaller
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-amber-600 dark:text-amber-400"
+                  }`}
+                >
+                  변환 완료({Math.abs(compressionRate).toFixed(1)}%{" "}
+                  {isSmaller ? "감소" : "증가"})
                 </span>
                 <span>•</span>
                 <span className="font-medium">
@@ -511,18 +524,29 @@ export const FileCard: React.FC<FileCardProps> = ({
                       <span className="text-gray-500 dark:text-gray-400">
                         압축률:
                       </span>
-                      <span className="text-green-600 dark:text-green-400 font-medium">
-                        {getCompressionRate().toFixed(1)}% 감소
+                      <span
+                        className={`font-medium ${
+                          isSmaller
+                            ? "text-green-600 dark:text-green-400"
+                            : "text-amber-600 dark:text-amber-400"
+                        }`}
+                      >
+                        {Math.abs(compressionRate).toFixed(1)}%{" "}
+                        {isSmaller ? "감소" : "증가"}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500 dark:text-gray-400">
-                        절약된 용량:
+                        {isSmaller ? "절약된 용량:" : "증가한 용량:"}
                       </span>
-                      <span className="text-green-600 dark:text-green-400 font-medium">
-                        {formatFileSize(
-                          result.originalSize - result.convertedSize
-                        )}
+                      <span
+                        className={`font-medium ${
+                          isSmaller
+                            ? "text-green-600 dark:text-green-400"
+                            : "text-amber-600 dark:text-amber-400"
+                        }`}
+                      >
+                        {formatFileSize(sizeDifference)}
                       </span>
                     </div>
                   </div>

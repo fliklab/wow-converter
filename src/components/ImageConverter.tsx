@@ -14,7 +14,7 @@ export const ImageConverter: React.FC = () => {
     results,
     error,
     showToast,
-    setSettings,
+    progress,
     onDrop,
     handleConvert,
     handleDownloadAll,
@@ -28,7 +28,6 @@ export const ImageConverter: React.FC = () => {
     quality: string;
     width: number | null;
     rename: boolean;
-    removeMetadata: boolean;
   }) => {
     // 포맷 매핑 (jpg -> jpeg)
     const formatMapping: Record<string, ImageFormat> = {
@@ -47,15 +46,12 @@ export const ImageConverter: React.FC = () => {
       low: 60,
     };
 
-    // 설정 업데이트
-    setSettings({
+    void handleConvert({
       format: formatMapping[options.outputFormat] || "jpeg",
       quality: qualityMapping[options.quality] || 75,
       width: options.width,
+      rename: options.rename,
     });
-
-    // 변환 시작
-    handleConvert();
   };
 
   return (
@@ -90,7 +86,7 @@ export const ImageConverter: React.FC = () => {
           onDownloadAll={handleDownloadAll}
           onClearList={handleClear}
           isConverting={isConverting}
-          progress={0} // TODO: 실제 진행률 계산 로직 추가
+          progress={progress}
           hasResults={results.length > 0}
           hasFiles={files.length > 0}
         />

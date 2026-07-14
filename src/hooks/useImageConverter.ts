@@ -10,6 +10,7 @@ export interface ConversionSettings {
   format: ImageFormat;
   quality: number;
   width: number | null;
+  rename: boolean;
 }
 
 export interface ImageFile {
@@ -32,11 +33,7 @@ export const useImageConverter = () => {
   const [results, setResults] = useState<ConversionResult[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
-  const [settings, setSettings] = useState<ConversionSettings>({
-    format: "jpeg",
-    quality: 75,
-    width: null,
-  });
+  const [progress, setProgress] = useState(0);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newImageFiles = acceptedFiles.map((file) => ({
@@ -46,28 +43,31 @@ export const useImageConverter = () => {
     setFiles((prevFiles) => [...prevFiles, ...newImageFiles]);
   }, []);
 
-  const handleConvert = useCallback(async () => {
+  const handleConvert = useCallback(async (settings: ConversionSettings) => {
     try {
       setError(null);
       setIsConverting(true);
+      setShowToast(false);
+      setProgress(0);
+      setResults([]);
 
       const newResults: ConversionResult[] = [];
       const encodeOptions: EncodeOptions = {
         [settings.format]: { quality: settings.quality },
       };
 
-      for (const imageFile of files) {
+      for (const [index, imageFile] of files.entries()) {
         const result = await processImage(
           imageFile.file,
           settings.format,
           encodeOptions,
           settings.width
         );
-        const extension = settings.format;
-        const convertedName = `${imageFile.file.name
-          .split(".")
-          .slice(0, -1)
-          .join(".")}_converted.${extension}`;
+        const extension = settings.format === "jpeg" ? "jpg" : settings.format;
+        const originalName = imageFile.file.name.replace(/\.[^/.]+$/, "");
+        const convertedName = settings.rename
+          ? `converted.${extension}`
+          : `${originalName}_converted.${extension}`;
 
         newResults.push({
           originalFile: imageFile,
@@ -77,6 +77,8 @@ export const useImageConverter = () => {
           originalSize: imageFile.file.size,
           convertedSize: result.blob.size,
         });
+
+        setProgress(Math.round(((index + 1) / files.length) * 100));
       }
 
       setResults(newResults);
@@ -91,7 +93,7 @@ export const useImageConverter = () => {
     } finally {
       setIsConverting(false);
     }
-  }, [files, settings]);
+  }, [files]);
 
   const handleDownloadAll = useCallback(() => {
     if (results.length === 0) return;
@@ -105,6 +107,8 @@ export const useImageConverter = () => {
     setFiles([]);
     setResults([]);
     setError(null);
+    setShowToast(false);
+    setProgress(0);
   }, []);
 
   const handleRemoveFile = useCallback((fileId: string) => {
@@ -125,8 +129,7 @@ export const useImageConverter = () => {
     results,
     error,
     showToast,
-    settings,
-    setSettings,
+    progress,
     onDrop,
     handleConvert,
     handleDownloadAll,
