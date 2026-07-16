@@ -4,9 +4,14 @@ import { useDropzone, DropzoneOptions } from "react-dropzone";
 interface DropzoneProps {
   onDrop: (files: File[]) => void;
   isConverting: boolean;
+  compact?: boolean;
 }
 
-export const Dropzone: React.FC<DropzoneProps> = ({ onDrop, isConverting }) => {
+export const Dropzone: React.FC<DropzoneProps> = ({
+  onDrop,
+  isConverting,
+  compact = false,
+}) => {
   const dropzoneOptions: DropzoneOptions = {
     onDrop,
     accept: {
@@ -21,8 +26,9 @@ export const Dropzone: React.FC<DropzoneProps> = ({ onDrop, isConverting }) => {
     <div
       {...getRootProps()}
       className={`
-        border-2 border-dashed rounded-xl p-12 text-center cursor-pointer 
+        border-2 border-dashed rounded-xl text-center cursor-pointer
         transition-all duration-200 ease-in-out
+        ${compact ? "p-5" : "p-12"}
         ${
           isDragActive
             ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-[1.02]"
@@ -33,17 +39,23 @@ export const Dropzone: React.FC<DropzoneProps> = ({ onDrop, isConverting }) => {
     >
       <input {...getInputProps()} disabled={isConverting} />
 
-      <div className="flex flex-col items-center space-y-4">
+      <div
+        className={`flex items-center justify-center ${
+          compact ? "gap-3" : "flex-col space-y-4"
+        }`}
+      >
         {/* Upload Icon */}
         <div
-          className={`w-16 h-16 rounded-full flex items-center justify-center ${
+          className={`${
+            compact ? "w-10 h-10" : "w-16 h-16"
+          } rounded-full flex items-center justify-center ${
             isDragActive
               ? "bg-blue-100 dark:bg-blue-900/30"
               : "bg-gray-100 dark:bg-gray-700"
           }`}
         >
           <svg
-            className={`w-8 h-8 ${
+            className={`${compact ? "w-5 h-5" : "w-8 h-8"} ${
               isDragActive
                 ? "text-blue-500"
                 : "text-gray-400 dark:text-gray-500"
@@ -65,7 +77,7 @@ export const Dropzone: React.FC<DropzoneProps> = ({ onDrop, isConverting }) => {
         <div>
           {isConverting ? (
             <>
-              <p className="text-lg font-medium text-gray-600 dark:text-gray-300">
+              <p className={`${compact ? "text-sm" : "text-lg"} font-medium text-gray-600 dark:text-gray-300`}>
                 변환 중...
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -74,8 +86,8 @@ export const Dropzone: React.FC<DropzoneProps> = ({ onDrop, isConverting }) => {
             </>
           ) : isDragActive ? (
             <>
-              <p className="text-lg font-medium text-blue-600 dark:text-blue-400">
-                이미지를 드래그해서 업로드하거나
+              <p className={`${compact ? "text-sm" : "text-lg"} font-medium text-blue-600 dark:text-blue-400`}>
+                {compact ? "여기에 놓아 파일 추가" : "이미지를 드래그해서 업로드하거나"}
               </p>
               <p className="text-sm text-blue-500 dark:text-blue-300 mt-1">
                 클릭하여 파일을 선택하세요
@@ -83,20 +95,22 @@ export const Dropzone: React.FC<DropzoneProps> = ({ onDrop, isConverting }) => {
             </>
           ) : (
             <>
-              <p className="text-lg font-medium text-gray-700 dark:text-gray-200">
-                이미지를 드래그해서 업로드하거나
+              <p className={`${compact ? "text-sm" : "text-lg"} font-medium text-gray-700 dark:text-gray-200`}>
+                {compact ? "파일 추가" : "이미지를 드래그해서 업로드하거나"}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                클릭하여 파일을 선택하세요
+                {compact ? "드래그하거나 클릭해서 선택하세요" : "클릭하여 파일을 선택하세요"}
               </p>
             </>
           )}
         </div>
 
         {/* Supported Formats */}
-        <p className="text-xs text-gray-400 dark:text-gray-500">
-          지원 형식: JPG, PNG, WebP, AVIF
-        </p>
+        {!compact && (
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            지원 형식: JPG, PNG, WebP, AVIF
+          </p>
+        )}
       </div>
     </div>
   );

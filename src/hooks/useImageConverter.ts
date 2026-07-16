@@ -27,6 +27,25 @@ export interface ConversionResult {
   convertedSize: number;
 }
 
+const getConvertedName = (
+  imageFile: ImageFile,
+  format: ImageFormat,
+  rename: boolean,
+  allFiles: ImageFile[]
+) => {
+  const extension = format === "jpeg" ? "jpg" : format;
+
+  if (rename) {
+    const fileIndex = allFiles.findIndex((file) => file.id === imageFile.id);
+    return allFiles.length > 1
+      ? `converted-${fileIndex + 1}.${extension}`
+      : `converted.${extension}`;
+  }
+
+  const originalName = imageFile.file.name.replace(/\.[^/.]+$/, "");
+  return `${originalName}_converted.${extension}`;
+};
+
 export const useImageConverter = () => {
   const [isConverting, setIsConverting] = useState(false);
   const [files, setFiles] = useState<ImageFile[]>([]);
@@ -38,9 +57,11 @@ export const useImageConverter = () => {
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newImageFiles = acceptedFiles.map((file) => ({
       file,
-      id: `${file.name}-${file.lastModified}`,
+      id: `${file.name}-${file.lastModified}-${crypto.randomUUID()}`,
     }));
     setFiles((prevFiles) => [...prevFiles, ...newImageFiles]);
+    setError(null);
+    setShowToast(false);
   }, []);
 
   const handleConvert = useCallback(async (settings: ConversionSettings) => {
@@ -49,25 +70,48 @@ export const useImageConverter = () => {
       setIsConverting(true);
       setShowToast(false);
       setProgress(0);
-      setResults([]);
+
+      const completedFileIds = new Set(
+        results.map((result) => result.originalFile.id)
+      );
+      const pendingFiles = files.filter((file) => !completedFileIds.has(file.id));
+      const shouldReconvertAll = pendingFiles.length === 0;
+      const filesToConvert = shouldReconvertAll ? files : pendingFiles;
+
+      if (shouldReconvertAll) {
+        setResults([]);
+      } else {
+        setResults((previousResults) =>
+          previousResults.map((result) => ({
+            ...result,
+            convertedName: getConvertedName(
+              result.originalFile,
+              result.format,
+              settings.rename,
+              files
+            ),
+          }))
+        );
+      }
 
       const newResults: ConversionResult[] = [];
       const encodeOptions: EncodeOptions = {
         [settings.format]: { quality: settings.quality },
       };
 
-      for (const [index, imageFile] of files.entries()) {
+      for (const [index, imageFile] of filesToConvert.entries()) {
         const result = await processImage(
           imageFile.file,
           settings.format,
           encodeOptions,
           settings.width
         );
-        const extension = settings.format === "jpeg" ? "jpg" : settings.format;
-        const originalName = imageFile.file.name.replace(/\.[^/.]+$/, "");
-        const convertedName = settings.rename
-          ? `converted.${extension}`
-          : `${originalName}_converted.${extension}`;
+        const convertedName = getConvertedName(
+          imageFile,
+          settings.format,
+          settings.rename,
+          files
+        );
 
         newResults.push({
           originalFile: imageFile,
@@ -78,10 +122,16 @@ export const useImageConverter = () => {
           convertedSize: result.blob.size,
         });
 
-        setProgress(Math.round(((index + 1) / files.length) * 100));
+        setProgress(
+          Math.round(((index + 1) / filesToConvert.length) * 100)
+        );
       }
 
-      setResults(newResults);
+      setResults((previousResults) =>
+        shouldReconvertAll
+          ? newResults
+          : [...previousResults, ...newResults]
+      );
       setShowToast(true);
     } catch (err) {
       console.error("이미지 변환 중 오류 발생:", err);
@@ -93,7 +143,7 @@ export const useImageConverter = () => {
     } finally {
       setIsConverting(false);
     }
-  }, [files]);
+  }, [files, results]);
 
   const handleDownloadAll = useCallback(() => {
     if (results.length === 0) return;
@@ -119,6 +169,23 @@ export const useImageConverter = () => {
     );
   }, []);
 
+  const handleRenameResults = useCallback(
+    (rename: boolean) => {
+      setResults((previousResults) =>
+        previousResults.map((result) => ({
+          ...result,
+          convertedName: getConvertedName(
+            result.originalFile,
+            result.format,
+            rename,
+            files
+          ),
+        }))
+      );
+    },
+    [files]
+  );
+
   const dismissToast = useCallback(() => {
     setShowToast(false);
   }, []);
@@ -135,6 +202,7 @@ export const useImageConverter = () => {
     handleDownloadAll,
     handleClear,
     handleRemoveFile,
+    handleRenameResults,
     dismissToast,
   };
 };

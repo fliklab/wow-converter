@@ -20,8 +20,16 @@ export const ImageConverter: React.FC = () => {
     handleDownloadAll,
     handleClear,
     handleRemoveFile,
+    handleRenameResults,
     dismissToast,
   } = useImageConverter();
+
+  const completedFileIds = new Set(
+    results.map((result) => result.originalFile.id)
+  );
+  const pendingCount = files.filter(
+    (file) => !completedFileIds.has(file.id)
+  ).length;
 
   const handleControlPanelSubmit = (options: {
     outputFormat: string;
@@ -69,8 +77,34 @@ export const ImageConverter: React.FC = () => {
       </header>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
-        {results.length === 0 && (
+        {files.length === 0 ? (
           <Dropzone onDrop={onDrop} isConverting={isConverting} />
+        ) : (
+          <>
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  작업 파일
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  전체 {files.length}개 · 변환 대기 {pendingCount}개
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleClear}
+                disabled={isConverting}
+                className="min-h-11 rounded-lg border border-gray-300 px-4 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+              >
+                새 작업
+              </button>
+            </div>
+            <Dropzone
+              onDrop={onDrop}
+              isConverting={isConverting}
+              compact
+            />
+          </>
         )}
         <ErrorDisplay error={error} />
         <Results
@@ -83,18 +117,18 @@ export const ImageConverter: React.FC = () => {
       {files.length > 0 && (
         <ControlPanel
           onSubmit={handleControlPanelSubmit}
+          onRenameChange={handleRenameResults}
           onDownloadAll={handleDownloadAll}
-          onClearList={handleClear}
           isConverting={isConverting}
           progress={progress}
           hasResults={results.length > 0}
-          hasFiles={files.length > 0}
+          pendingCount={pendingCount}
         />
       )}
 
       {showToast && (
         <Toast
-          message={`🎉 ${results.length}개 파일 변환이 완료되었습니다!`}
+          message={`${results.length}개 파일 변환이 완료되었습니다.`}
           type="success"
           onClose={dismissToast}
         />

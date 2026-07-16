@@ -7,22 +7,22 @@ interface ControlPanelProps {
     width: number | null;
     rename: boolean;
   }) => void;
+  onRenameChange: (rename: boolean) => void;
   onDownloadAll: () => void;
-  onClearList: () => void;
   isConverting: boolean;
   progress: number;
   hasResults?: boolean;
-  hasFiles?: boolean;
+  pendingCount?: number;
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({
   onSubmit,
+  onRenameChange,
   onDownloadAll,
-  onClearList,
   isConverting,
   progress,
   hasResults,
-  hasFiles,
+  pendingCount = 0,
 }) => {
   const [outputFormat, setOutputFormat] = useState("jpg");
   const [quality, setQuality] = useState("original");
@@ -106,10 +106,14 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             <input
               type="checkbox"
               checked={rename}
-              onChange={(e) => setRename(e.target.checked)}
+              onChange={(e) => {
+                const nextRename = e.target.checked;
+                setRename(nextRename);
+                onRenameChange(nextRename);
+              }}
               className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
             />
-            파일 이름 초기화
+            파일명 초기화
           </label>
           <label className="flex items-center gap-2 text-gray-500 dark:text-text-secondary">
             <input
@@ -138,7 +142,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           disabled={isConverting}
           className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          변환 시작
+          {pendingCount > 0 ? `${pendingCount}개 파일 변환` : "전체 다시 변환"}
         </button>
         {hasResults && (
           <button
@@ -147,15 +151,6 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             모두 다운로드
-          </button>
-        )}
-        {hasFiles && (
-          <button
-            onClick={onClearList}
-            disabled={isConverting}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            리스트 비우기
           </button>
         )}
       </div>
