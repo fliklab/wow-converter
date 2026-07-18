@@ -37,7 +37,10 @@ export const Dropzone: React.FC<DropzoneProps> = ({
         ${isConverting ? "opacity-50 cursor-not-allowed" : ""}
       `}
     >
-      <input {...getInputProps()} disabled={isConverting} />
+      <input
+        {...getInputProps({ "aria-label": "변환할 이미지 파일 선택" })}
+        disabled={isConverting}
+      />
 
       <div
         className={`flex items-center justify-center ${
@@ -107,7 +110,7 @@ export const Dropzone: React.FC<DropzoneProps> = ({
 
         {/* Supported Formats */}
         {!compact && (
-          <p className="text-xs text-gray-400 dark:text-gray-500">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             지원 형식: JPG, PNG, WebP, AVIF
           </p>
         )}

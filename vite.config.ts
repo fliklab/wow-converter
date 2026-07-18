@@ -1,10 +1,48 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 
+const inlineCss = (): Plugin => ({
+  name: "inline-css",
+  enforce: "post" as const,
+  generateBundle(_options, bundle) {
+    const htmlAsset = bundle["index.html"];
+    if (htmlAsset?.type !== "asset" || typeof htmlAsset.source !== "string") {
+      return;
+    }
+
+    for (const asset of Object.values(bundle)) {
+      if (asset.type !== "asset" || !asset.fileName.endsWith(".css")) {
+        continue;
+      }
+
+      const css =
+        typeof asset.source === "string"
+          ? asset.source
+          : new TextDecoder().decode(asset.source);
+      const escapedFileName = asset.fileName.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&"
+      );
+      const stylesheetLink = new RegExp(
+        `<link[^>]+href=["']/${escapedFileName}["'][^>]*>`
+      );
+      const inlinedHtml = htmlAsset.source.replace(
+        stylesheetLink,
+        `<style>${css}</style>`
+      );
+
+      if (inlinedHtml !== htmlAsset.source) {
+        htmlAsset.source = inlinedHtml;
+        delete bundle[asset.fileName];
+      }
+    }
+  },
+});
+
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), inlineCss()],
   resolve: {
     alias: {
       "@": resolve(__dirname, "src"),
@@ -25,19 +63,6 @@ export default defineConfig({
     outDir: "build",
     sourcemap: true,
     target: "esnext",
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          "jsquash-core": [
-            "@jsquash/avif",
-            "@jsquash/jpeg",
-            "@jsquash/png",
-            "@jsquash/webp",
-            "@jsquash/resize",
-          ],
-        },
-      },
-    },
   },
   worker: {
     format: "es",

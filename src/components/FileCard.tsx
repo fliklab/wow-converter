@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { ImageFile, ConversionResult } from "../hooks/useImageConverter";
+import type { ImageFile, ConversionResult } from "../hooks/useImageConverter";
 import { downloadFile } from "../utils/file";
-import * as EXIF from "exif-js";
 
 interface FileCardProps {
   type: "uploaded" | "result";
@@ -66,7 +65,7 @@ export const FileCard: React.FC<FileCardProps> = ({
 
     // 이미지 기본 메타데이터 추출
     const img = new Image();
-    img.onload = () => {
+    img.onload = async () => {
       // Canvas를 사용하여 색상 정보 분석
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
@@ -94,6 +93,7 @@ export const FileCard: React.FC<FileCardProps> = ({
 
         // EXIF 데이터 추출 (타입 안전성을 위해 try-catch 사용)
         try {
+          const EXIF = await import("exif-js");
           EXIF.getData(imageFile.file as any, () => {
             try {
               const exifData = {

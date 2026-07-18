@@ -1,11 +1,6 @@
 import { useCallback, useState } from "react";
-import {
-  processImage,
-  ImageFormat,
-  EncodeOptions,
-} from "../utils/imageProcessor";
+import type { ImageFormat, EncodeOptions } from "../utils/imageProcessor";
 import { downloadFile } from "../utils/file";
-import { preserveSupportedMetadata } from "../utils/metadataPreservation";
 import type { MetadataPolicy } from "../utils/metadataPreservation";
 
 export interface ConversionSettings {
@@ -101,6 +96,12 @@ export const useImageConverter = () => {
       const encodeOptions: EncodeOptions = {
         [settings.format]: { quality: settings.quality },
       };
+      const { processImage } = await import("../utils/imageProcessor");
+      const preserveMetadata =
+        settings.metadataPolicy === "preserve"
+          ? (await import("../utils/metadataPreservation"))
+              .preserveSupportedMetadata
+          : null;
 
       for (const [index, imageFile] of filesToConvert.entries()) {
         const result = await processImage(
@@ -109,8 +110,8 @@ export const useImageConverter = () => {
           encodeOptions,
           settings.width
         );
-        const convertedBlob = settings.metadataPolicy === "preserve"
-          ? await preserveSupportedMetadata(
+        const convertedBlob = preserveMetadata
+          ? await preserveMetadata(
               imageFile.file,
               result.blob,
               settings.format,

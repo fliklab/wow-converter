@@ -1,14 +1,15 @@
-import { encode as encodeJpeg, decode as decodeJpeg } from "@jsquash/jpeg";
-import { encode as encodeWebp, decode as decodeWebp } from "@jsquash/webp";
-import { encode as encodeAvif, decode as decodeAvif } from "@jsquash/avif";
-import { encode as encodePng, decode as decodePng } from "@jsquash/png";
-import resize from "@jsquash/resize";
-
 // 지원하는 이미지 포맷 타입을 정의합니다.
 export type ImageFormat = "jpeg" | "webp" | "avif" | "png";
 
 // 지원하는 MIME 타입을 정의합니다.
 type MimeType = "image/jpeg" | "image/png" | "image/webp" | "image/avif";
+
+const SUPPORTED_MIME_TYPES = new Set<MimeType>([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/avif",
+]);
 
 // 실용적인 인코딩 옵션 타입 정의
 export type EncodeOptions = {
@@ -28,27 +29,40 @@ export interface ProcessingResult {
 }
 
 // 디코더의 반환 타입 문제를 해결하기 위해, 반환값을 검사하는 Wrapper 함수를 사용합니다.
-const decoders: Record<MimeType, (data: ArrayBuffer) => Promise<ImageData>> = {
-  "image/jpeg": async (data) => {
-    const result = await decodeJpeg(data);
-    if (!result) throw new Error("JPEG 디코딩 실패");
-    return result;
-  },
-  "image/png": async (data) => {
-    const result = await decodePng(data);
-    if (!result) throw new Error("PNG 디코딩 실패");
-    return result;
-  },
-  "image/webp": async (data) => {
-    const result = await decodeWebp(data);
-    if (!result) throw new Error("WebP 디코딩 실패");
-    return result;
-  },
-  "image/avif": async (data) => {
-    const result = await decodeAvif(data);
-    if (!result) throw new Error("AVIF 디코딩 실패");
-    return result;
-  },
+const decodeImage = async (
+  type: MimeType,
+  data: ArrayBuffer
+): Promise<ImageData> => {
+  let result: ImageData | null | undefined;
+
+  switch (type) {
+    case "image/jpeg": {
+      const { decode } = await import("@jsquash/jpeg");
+      result = await decode(data);
+      break;
+    }
+    case "image/png": {
+      const { decode } = await import("@jsquash/png");
+      result = await decode(data);
+      break;
+    }
+    case "image/webp": {
+      const { decode } = await import("@jsquash/webp");
+      result = await decode(data);
+      break;
+    }
+    case "image/avif": {
+      const { decode } = await import("@jsquash/avif");
+      result = await decode(data);
+      break;
+    }
+  }
+
+  if (!result) {
+    throw new Error(`${type} 디코딩 실패`);
+  }
+
+  return result;
 };
 
 /**
@@ -67,16 +81,17 @@ export const processImage = async (
 ): Promise<ProcessingResult> => {
   try {
     const arrayBuffer = await file.arrayBuffer();
-    const decoder = decoders[file.type as MimeType];
-    if (!decoder) {
+    const mimeType = file.type as MimeType;
+    if (!SUPPORTED_MIME_TYPES.has(mimeType)) {
       throw new Error(`지원하지 않는 파일 형식입니다: ${file.type}`);
     }
-    let imageData = await decoder(arrayBuffer);
+    let imageData = await decodeImage(mimeType, arrayBuffer);
 
     // 이미지 리사이즈 처리
     if (targetWidth && imageData.width > targetWidth) {
       const aspectRatio = imageData.height / imageData.width;
       const targetHeight = Math.round(targetWidth * aspectRatio);
+      const { default: resize } = await import("@jsquash/resize");
       imageData = await resize(imageData, {
         width: targetWidth,
         height: targetHeight,
@@ -88,16 +103,25 @@ export const processImage = async (
 
     switch (format) {
       case "jpeg":
-        encodedData = await encodeJpeg(imageData, { quality });
+        encodedData = await (await import("@jsquash/jpeg")).encode(
+          imageData,
+          { quality }
+        );
         break;
       case "webp":
-        encodedData = await encodeWebp(imageData, { quality });
+        encodedData = await (await import("@jsquash/webp")).encode(
+          imageData,
+          { quality }
+        );
         break;
       case "avif":
-        encodedData = await encodeAvif(imageData, { quality });
+        encodedData = await (await import("@jsquash/avif")).encode(
+          imageData,
+          { quality }
+        );
         break;
       case "png":
-        encodedData = await encodePng(imageData);
+        encodedData = await (await import("@jsquash/png")).encode(imageData);
         break;
     }
 

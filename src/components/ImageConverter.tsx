@@ -1,12 +1,15 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { useImageConverter } from "../hooks/useImageConverter";
-import { ImageFormat } from "../utils/imageProcessor";
+import type { ImageFormat } from "../utils/imageProcessor";
 import { Dropzone } from "./Dropzone";
-import { Results } from "./Results";
 import { ErrorDisplay } from "./ErrorDisplay";
 import { Toast } from "./Toast";
-import ControlPanel from "./ControlPanel";
 import type { MetadataPolicy } from "../utils/metadataPreservation";
+
+const Results = React.lazy(() =>
+  import("./Results").then(({ Results }) => ({ default: Results }))
+);
+const ControlPanel = React.lazy(() => import("./ControlPanel"));
 
 export const ImageConverter: React.FC = () => {
   const {
@@ -110,23 +113,38 @@ export const ImageConverter: React.FC = () => {
           </>
         )}
         <ErrorDisplay error={error} />
-        <Results
-          files={files}
-          results={results}
-          onRemoveFile={handleRemoveFile}
-        />
+        {files.length > 0 && (
+          <Suspense
+            fallback={
+              <p
+                className="mt-8 text-sm text-gray-600 dark:text-gray-300"
+                role="status"
+              >
+                파일 정보를 불러오는 중...
+              </p>
+            }
+          >
+            <Results
+              files={files}
+              results={results}
+              onRemoveFile={handleRemoveFile}
+            />
+          </Suspense>
+        )}
       </div>
 
       {files.length > 0 && (
-        <ControlPanel
-          onSubmit={handleControlPanelSubmit}
-          onRenameChange={handleRenameResults}
-          onDownloadAll={handleDownloadAll}
-          isConverting={isConverting}
-          progress={progress}
-          hasResults={results.length > 0}
-          pendingCount={pendingCount}
-        />
+        <Suspense fallback={null}>
+          <ControlPanel
+            onSubmit={handleControlPanelSubmit}
+            onRenameChange={handleRenameResults}
+            onDownloadAll={handleDownloadAll}
+            isConverting={isConverting}
+            progress={progress}
+            hasResults={results.length > 0}
+            pendingCount={pendingCount}
+          />
+        </Suspense>
       )}
 
       {showToast && (
