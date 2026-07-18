@@ -5,12 +5,15 @@ import {
   EncodeOptions,
 } from "../utils/imageProcessor";
 import { downloadFile } from "../utils/file";
+import { preserveSupportedMetadata } from "../utils/metadataPreservation";
+import type { MetadataPolicy } from "../utils/metadataPreservation";
 
 export interface ConversionSettings {
   format: ImageFormat;
   quality: number;
   width: number | null;
   rename: boolean;
+  metadataPolicy: MetadataPolicy;
 }
 
 export interface ImageFile {
@@ -106,6 +109,15 @@ export const useImageConverter = () => {
           encodeOptions,
           settings.width
         );
+        const convertedBlob = settings.metadataPolicy === "preserve"
+          ? await preserveSupportedMetadata(
+              imageFile.file,
+              result.blob,
+              settings.format,
+              result.width,
+              result.height
+            )
+          : result.blob;
         const convertedName = getConvertedName(
           imageFile,
           settings.format,
@@ -115,11 +127,11 @@ export const useImageConverter = () => {
 
         newResults.push({
           originalFile: imageFile,
-          convertedBlob: result.blob,
+          convertedBlob,
           convertedName,
           format: settings.format,
           originalSize: imageFile.file.size,
-          convertedSize: result.blob.size,
+          convertedSize: convertedBlob.size,
         });
 
         setProgress(

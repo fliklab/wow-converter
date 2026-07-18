@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import type { MetadataPolicy } from "../utils/metadataPreservation";
+import { HelpTooltip } from "./HelpTooltip";
 
 interface ControlPanelProps {
   onSubmit: (options: {
@@ -6,6 +8,7 @@ interface ControlPanelProps {
     quality: string;
     width: number | null;
     rename: boolean;
+    metadataPolicy: MetadataPolicy;
   }) => void;
   onRenameChange: (rename: boolean) => void;
   onDownloadAll: () => void;
@@ -28,11 +31,19 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   const [quality, setQuality] = useState("original");
   const [width, setWidth] = useState<number | null>(null);
   const [rename, setRename] = useState(false);
+  const [metadataPolicy, setMetadataPolicy] =
+    useState<MetadataPolicy>("remove");
 
   const predefinedWidths = [200, 400, 640, 860, 1024];
 
   const handleSubmit = () => {
-    onSubmit({ outputFormat, quality, width, rename });
+    onSubmit({
+      outputFormat,
+      quality,
+      width,
+      rename,
+      metadataPolicy: outputFormat === "avif" ? "remove" : metadataPolicy,
+    });
   };
 
   const handleWidthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,15 +126,26 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             />
             파일명 초기화
           </label>
-          <label className="flex items-center gap-2 text-gray-500 dark:text-text-secondary">
-            <input
-              type="checkbox"
-              checked
-              disabled
-              className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
-            />
-            메타데이터 제거 (항상 적용)
-          </label>
+          <div className="flex items-center gap-2 text-gray-700 dark:text-text-primary">
+            <label htmlFor="metadata-policy">메타데이터:</label>
+            <select
+              id="metadata-policy"
+              value={outputFormat === "avif" ? "remove" : metadataPolicy}
+              onChange={(event) =>
+                setMetadataPolicy(event.target.value as MetadataPolicy)
+              }
+              disabled={outputFormat === "avif"}
+              className="min-h-11 rounded border border-gray-300 bg-white px-2 py-1 text-gray-900 outline-none focus:ring-2 focus:ring-primary/50 dark:border-border dark:bg-card dark:text-text-primary"
+            >
+              <option value="remove">제거</option>
+              <option value="preserve">가능한 항목 보존</option>
+            </select>
+            <HelpTooltip label="메타데이터 처리 도움말">
+              위치·촬영 기기 등 개인정보를 삭제하거나, JPG·PNG·WebP가 지원하는
+              EXIF 메타데이터를 가능한 범위에서 유지합니다. AVIF 변환 시에는
+              자동으로 제거됩니다.
+            </HelpTooltip>
+          </div>
         </div>
       </div>
 

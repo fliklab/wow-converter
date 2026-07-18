@@ -6,6 +6,7 @@ import { Results } from "./Results";
 import { ErrorDisplay } from "./ErrorDisplay";
 import { Toast } from "./Toast";
 import ControlPanel from "./ControlPanel";
+import type { MetadataPolicy } from "../utils/metadataPreservation";
 
 export const ImageConverter: React.FC = () => {
   const {
@@ -36,6 +37,7 @@ export const ImageConverter: React.FC = () => {
     quality: string;
     width: number | null;
     rename: boolean;
+    metadataPolicy: MetadataPolicy;
   }) => {
     // 포맷 매핑 (jpg -> jpeg)
     const formatMapping: Record<string, ImageFormat> = {
@@ -59,6 +61,7 @@ export const ImageConverter: React.FC = () => {
       quality: qualityMapping[options.quality] || 75,
       width: options.width,
       rename: options.rename,
+      metadataPolicy: options.metadataPolicy,
     });
   };
 

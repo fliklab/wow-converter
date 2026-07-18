@@ -23,6 +23,8 @@ export interface ProcessingResult {
   blob: Blob;
   format: ImageFormat;
   size: number;
+  width: number;
+  height: number;
 }
 
 // 디코더의 반환 타입 문제를 해결하기 위해, 반환값을 검사하는 Wrapper 함수를 사용합니다.
@@ -103,6 +105,8 @@ export const processImage = async (
       blob: new Blob([encodedData], { type: `image/${format}` }),
       format: format,
       size: encodedData.byteLength,
+      width: imageData.width,
+      height: imageData.height,
     };
   } catch (error) {
     console.error("이미지 처리 중 오류 발생:", error);
