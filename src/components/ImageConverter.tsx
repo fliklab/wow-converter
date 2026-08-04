@@ -83,9 +83,9 @@ export const ImageConverter: React.FC = () => {
           WEB OPTIMIZATION WIZARD
         </div>
         <h1 className="text-balance text-3xl font-extrabold tracking-[-0.04em] text-slate-950 sm:text-5xl">
-          이미지를 더 가볍게,
+          웹 최적화를 위한
           <span className="block bg-gradient-to-r from-[#6d5dfc] via-[#777cfb] to-[#36b9dc] bg-clip-text text-transparent">
-            화질은 선명하게
+            이미지 변환 도구
           </span>
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-[15px] leading-6 text-slate-600 sm:text-base">
