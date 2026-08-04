@@ -4,12 +4,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#1db954",
-        "primary-hover": "#1ed760",
-        card: "#1e1e1e",
-        border: "#333333",
-        "text-primary": "#ffffff",
-        "text-secondary": "#aaaaaa",
+        primary: "#6D5DFC",
+        "primary-hover": "#5948F3",
+        card: "#FFFFFF",
+        border: "#E6E8F2",
+        "text-primary": "#172033",
+        "text-secondary": "#697386",
       },
       boxShadow: {
         sm: "0 2px 6px rgba(0, 0, 0, 0.1)",

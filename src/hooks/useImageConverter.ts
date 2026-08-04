@@ -23,6 +23,8 @@ export interface ConversionResult {
   format: ImageFormat;
   originalSize: number;
   convertedSize: number;
+  width: number;
+  height: number;
 }
 
 const getConvertedName = (
@@ -133,6 +135,8 @@ export const useImageConverter = () => {
           format: settings.format,
           originalSize: imageFile.file.size,
           convertedSize: convertedBlob.size,
+          width: result.width,
+          height: result.height,
         });
 
         setProgress(

@@ -1,5 +1,6 @@
 import React from "react";
-import { useDropzone, DropzoneOptions } from "react-dropzone";
+import { ArrowUpTrayIcon, PhotoIcon } from "@heroicons/react/24/outline";
+import { useDropzone, type DropzoneOptions } from "react-dropzone";
 
 interface DropzoneProps {
   onDrop: (files: File[]) => void;
@@ -7,113 +8,49 @@ interface DropzoneProps {
   compact?: boolean;
 }
 
-export const Dropzone: React.FC<DropzoneProps> = ({
-  onDrop,
-  isConverting,
-  compact = false,
-}) => {
+export const Dropzone: React.FC<DropzoneProps> = ({ onDrop, isConverting, compact = false }) => {
   const dropzoneOptions: DropzoneOptions = {
     onDrop,
+    disabled: isConverting,
+    multiple: true,
     accept: {
-      "image/*": [".jpeg", ".jpg", ".png", ".webp", ".avif"],
+      "image/jpeg": [".jpeg", ".jpg"],
+      "image/png": [".png"],
+      "image/webp": [".webp"],
+      "image/avif": [".avif"],
     },
   };
 
-  const { getRootProps, getInputProps, isDragActive } =
-    useDropzone(dropzoneOptions);
+  const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone(dropzoneOptions);
+  const stateClasses = isDragReject
+    ? "border-red-300 bg-red-50"
+    : isDragActive
+      ? "border-primary bg-violet-50 shadow-[inset_0_0_0_1px_rgba(109,93,252,0.12)]"
+      : "border-violet-200/80 bg-gradient-to-br from-violet-50/80 via-white to-cyan-50/70 hover:border-primary/60 hover:bg-violet-50/70";
 
   return (
     <div
       {...getRootProps()}
-      className={`
-        border-2 border-dashed rounded-xl text-center cursor-pointer
-        transition-all duration-200 ease-in-out
-        ${compact ? "p-5" : "p-12"}
-        ${
-          isDragActive
-            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-[1.02]"
-            : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/50"
-        }
-        ${isConverting ? "opacity-50 cursor-not-allowed" : ""}
-      `}
+      className={`group cursor-pointer rounded-[22px] border-2 border-dashed text-center transition duration-200 ${compact ? "px-4 py-3" : "px-5 py-10 sm:py-14"} ${stateClasses} ${isConverting ? "cursor-not-allowed opacity-55" : ""}`}
     >
-      <input
-        {...getInputProps({ "aria-label": "변환할 이미지 파일 선택" })}
-        disabled={isConverting}
-      />
-
-      <div
-        className={`flex items-center justify-center ${
-          compact ? "gap-3" : "flex-col space-y-4"
-        }`}
-      >
-        {/* Upload Icon */}
-        <div
-          className={`${
-            compact ? "w-10 h-10" : "w-16 h-16"
-          } rounded-full flex items-center justify-center ${
-            isDragActive
-              ? "bg-blue-100 dark:bg-blue-900/30"
-              : "bg-gray-100 dark:bg-gray-700"
-          }`}
-        >
-          <svg
-            className={`${compact ? "w-5 h-5" : "w-8 h-8"} ${
-              isDragActive
-                ? "text-blue-500"
-                : "text-gray-400 dark:text-gray-500"
-            }`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-            />
-          </svg>
+      <input {...getInputProps({ "aria-label": "변환할 이미지 파일 선택" })} />
+      <div className={`flex items-center justify-center ${compact ? "gap-3" : "flex-col"}`}>
+        <div className={`flex shrink-0 items-center justify-center rounded-2xl bg-white text-primary shadow-[0_10px_25px_rgba(109,93,252,0.14)] transition group-hover:-translate-y-0.5 ${compact ? "h-11 w-11" : "mb-5 h-16 w-16"}`}>
+          {compact ? <PhotoIcon className="h-6 w-6" aria-hidden="true" /> : <ArrowUpTrayIcon className="h-7 w-7" aria-hidden="true" />}
         </div>
-
-        {/* Main Message */}
-        <div>
-          {isConverting ? (
-            <>
-              <p className={`${compact ? "text-sm" : "text-lg"} font-medium text-gray-600 dark:text-gray-300`}>
-                변환 중...
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                잠시만 기다려주세요
-              </p>
-            </>
-          ) : isDragActive ? (
-            <>
-              <p className={`${compact ? "text-sm" : "text-lg"} font-medium text-blue-600 dark:text-blue-400`}>
-                {compact ? "여기에 놓아 파일 추가" : "이미지를 드래그해서 업로드하거나"}
-              </p>
-              <p className="text-sm text-blue-500 dark:text-blue-300 mt-1">
-                클릭하여 파일을 선택하세요
-              </p>
-            </>
-          ) : (
-            <>
-              <p className={`${compact ? "text-sm" : "text-lg"} font-medium text-gray-700 dark:text-gray-200`}>
-                {compact ? "파일 추가" : "이미지를 드래그해서 업로드하거나"}
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                {compact ? "드래그하거나 클릭해서 선택하세요" : "클릭하여 파일을 선택하세요"}
-              </p>
-            </>
-          )}
-        </div>
-
-        {/* Supported Formats */}
-        {!compact && (
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            지원 형식: JPG, PNG, WebP, AVIF
+        <div className={compact ? "min-w-0 text-left" : ""}>
+          <p className={`${compact ? "text-sm" : "text-lg"} font-bold text-slate-800`}>
+            {isConverting ? "변환 중에는 파일을 추가할 수 없어요" : isDragReject ? "지원하지 않는 파일이에요" : isDragActive ? "여기에 놓아주세요" : compact ? "이미지 더 추가하기" : "이미지를 여기에 놓아주세요"}
           </p>
-        )}
+          <p className={`${compact ? "mt-0.5 text-xs" : "mt-2 text-sm"} text-slate-500`}>
+            {compact ? "드래그하거나 눌러서 선택" : "또는 눌러서 여러 파일을 선택하세요"}
+          </p>
+        </div>
+        {!compact ? (
+          <div className="mt-5 flex flex-wrap justify-center gap-2" aria-label="지원 형식">
+            {["JPG", "PNG", "WebP", "AVIF"].map((format) => <span key={format} className="rounded-full border border-white bg-white/80 px-2.5 py-1 text-[11px] font-bold text-slate-500 shadow-sm">{format}</span>)}
+          </div>
+        ) : null}
       </div>
     </div>
   );

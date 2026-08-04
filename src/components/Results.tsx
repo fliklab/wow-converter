@@ -18,8 +18,8 @@ export const Results: React.FC<ResultsProps> = ({
   }
 
   return (
-    <div className="mt-8">
-      <div className="space-y-4">
+    <div className="mt-5">
+      <div className="space-y-3">
         {files.map((imageFile) => {
           const result = results.find(
             (item) => item.originalFile.id === imageFile.id

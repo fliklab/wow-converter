@@ -11,11 +11,11 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ error }) => {
 
   return (
     <div
-      className="my-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md"
+      className="my-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
       role="alert"
     >
       <p>
-        <strong className="font-bold">오류:</strong> {error}
+        <strong className="font-bold">변환할 수 없습니다.</strong> {error}
       </p>
     </div>
   );

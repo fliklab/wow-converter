@@ -69,11 +69,11 @@ export const FileCard: React.FC<FileCardProps> = ({
       // Canvas를 사용하여 색상 정보 분석
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      canvas.width = img.width;
-      canvas.height = img.height;
+      canvas.width = 1;
+      canvas.height = 1;
 
       if (ctx) {
-        ctx.drawImage(img, 0, 0);
+        ctx.drawImage(img, 0, 0, 1, 1);
 
         // 첫 번째 픽셀 분석으로 알파 채널 확인 (간단한 방법)
         const imageData = ctx.getImageData(0, 0, 1, 1);
@@ -90,6 +90,7 @@ export const FileCard: React.FC<FileCardProps> = ({
           bitDepth: 8, // 웹에서는 일반적으로 8비트
           colorSpace: hasAlpha ? "RGBA" : "RGB",
         };
+        setMetadata(basicMetadata);
 
         // EXIF 데이터 추출 (타입 안전성을 위해 try-catch 사용)
         try {
@@ -155,12 +156,6 @@ export const FileCard: React.FC<FileCardProps> = ({
           setMetadata(basicMetadata);
         }
 
-        // EXIF가 없는 경우 기본 메타데이터만 설정
-        setTimeout(() => {
-          if (!metadata) {
-            setMetadata(basicMetadata);
-          }
-        }, 500);
       }
     };
     img.src = url;
@@ -224,15 +219,8 @@ export const FileCard: React.FC<FileCardProps> = ({
     ? Math.abs(result.originalSize - result.convertedSize)
     : 0;
 
-  const handleCardClick = () => {
-    setIsExpanded(!isExpanded);
-  };
-
   return (
-    <div
-      className="bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 p-4 cursor-pointer"
-      onClick={handleCardClick}
-    >
+    <article className="rounded-[20px] border border-slate-200/80 bg-slate-50/70 p-3.5 transition hover:border-violet-200 hover:bg-violet-50/30 sm:p-4">
       <div className="flex items-start gap-4">
         {/* 썸네일 */}
         <div className="flex-shrink-0">
@@ -240,12 +228,12 @@ export const FileCard: React.FC<FileCardProps> = ({
             <img
               src={previewUrl}
               alt={imageFile.file.name}
-              className="w-16 h-16 rounded-lg object-cover border border-gray-300 dark:border-gray-500"
+              className="h-16 w-16 rounded-2xl border border-white object-cover shadow-sm"
             />
           ) : (
-            <div className="w-16 h-16 rounded-lg bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-200">
               <svg
-                className="w-8 h-8 text-gray-400"
+                className="h-8 w-8 text-slate-400"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -262,7 +250,7 @@ export const FileCard: React.FC<FileCardProps> = ({
         {/* 파일 정보 */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
-            <h3 className="font-medium text-gray-900 dark:text-white truncate">
+            <h3 className="truncate font-bold text-slate-900">
               {type === "result" && result
                 ? result.convertedName
                 : imageFile.file.name}
@@ -277,8 +265,9 @@ export const FileCard: React.FC<FileCardProps> = ({
                   e.stopPropagation();
                   onRemoveFile(imageFile.id);
                 }}
-                className="p-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                className="flex min-h-11 min-w-11 items-center justify-center rounded-xl text-red-500 transition-colors hover:bg-red-50 hover:text-red-700"
                 title="파일 제거"
+                aria-label={`${imageFile.file.name} 제거`}
               >
                 <svg
                   className="w-4 h-4"
@@ -299,8 +288,9 @@ export const FileCard: React.FC<FileCardProps> = ({
               {type === "result" && result && (
                 <button
                   onClick={handleDownload}
-                  className="p-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                  className="flex min-h-11 min-w-11 items-center justify-center rounded-xl text-primary transition-colors hover:bg-violet-50"
                   title="다운로드"
+                  aria-label={`${result.convertedName} 다운로드`}
                 >
                   <svg
                     className="w-5 h-5"
@@ -324,7 +314,9 @@ export const FileCard: React.FC<FileCardProps> = ({
                   e.stopPropagation();
                   setIsExpanded(!isExpanded);
                 }}
-                className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+                className="flex min-h-11 min-w-11 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-white hover:text-slate-700"
+                aria-label={isExpanded ? "파일 세부 정보 숨기기" : "파일 세부 정보 보기"}
+                aria-expanded={isExpanded}
               >
                 <svg
                   className={`w-5 h-5 transform transition-transform ${
@@ -345,7 +337,7 @@ export const FileCard: React.FC<FileCardProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-4 mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 sm:text-sm">
             {type === "result" && result ? (
               <>
                 <span
@@ -364,6 +356,8 @@ export const FileCard: React.FC<FileCardProps> = ({
                 </span>
                 <span>•</span>
                 <span>{formatFileSize(result.convertedSize)}</span>
+                <span>•</span>
+                <span>{result.width}×{result.height}</span>
               </>
             ) : (
               <>
@@ -389,7 +383,7 @@ export const FileCard: React.FC<FileCardProps> = ({
       {/* 확장된 정보 */}
       {isExpanded && (
         <div
-          className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600"
+          className="mt-4 border-t border-slate-200 pt-4"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="grid grid-cols-1 gap-6">
@@ -518,6 +512,14 @@ export const FileCard: React.FC<FileCardProps> = ({
                       </span>
                       <span className="text-gray-900 dark:text-white">
                         image/{result.format}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500 dark:text-gray-400">
+                        해상도:
+                      </span>
+                      <span className="text-gray-900 dark:text-white">
+                        {result.width} × {result.height} px
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -699,6 +701,6 @@ export const FileCard: React.FC<FileCardProps> = ({
           </div>
         </div>
       )}
-    </div>
+    </article>
   );
 };

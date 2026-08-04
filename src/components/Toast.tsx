@@ -39,12 +39,14 @@ export const Toast: React.FC<ToastProps> = ({
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 transition-all duration-300 ${
+      role="status"
+      aria-live="polite"
+      className={`fixed left-4 right-4 top-4 z-50 mx-auto max-w-sm transition-all duration-300 sm:left-auto sm:mx-0 ${
         isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-full"
       }`}
     >
       <div
-        className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${getTypeStyles()}`}
+        className={`flex items-center gap-3 rounded-2xl px-4 py-3 shadow-xl ${getTypeStyles()}`}
       >
         {type === "success" && (
           <svg
@@ -63,11 +65,13 @@ export const Toast: React.FC<ToastProps> = ({
         )}
         <span className="font-medium">{message}</span>
         <button
+          type="button"
+          aria-label="알림 닫기"
           onClick={() => {
             setIsVisible(false);
             setTimeout(onClose, 300);
           }}
-          className="ml-2 text-white hover:text-gray-200"
+          className="ml-auto flex min-h-11 min-w-11 items-center justify-center rounded-xl text-white hover:bg-white/15"
         >
           <svg
             className="w-4 h-4"
