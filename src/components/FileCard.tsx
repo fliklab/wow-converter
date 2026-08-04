@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import type { ImageFile, ConversionResult } from "../hooks/useImageConverter";
 import { downloadFile } from "../utils/file";
 import { FileActionButtons } from "./FileActionButtons";
@@ -216,6 +217,13 @@ export const FileCard: React.FC<FileCardProps> = ({
 
   const compressionRate = getCompressionRate();
   const isSmaller = compressionRate >= 0;
+  const isSameSize = Math.abs(compressionRate) < 0.05;
+  const displayedCompressionRate = Math.abs(compressionRate).toFixed(1);
+  const sizeChangeLabel = isSameSize
+    ? "동일"
+    : isSmaller
+      ? "↓ 절감"
+      : "↑ 증가";
   const sizeDifference = result
     ? Math.abs(result.originalSize - result.convertedSize)
     : 0;
@@ -296,30 +304,43 @@ export const FileCard: React.FC<FileCardProps> = ({
             </div>
           </div>
 
-          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 sm:text-sm">
+          <div className="mt-1 text-xs text-slate-500 sm:text-sm">
             {type === "result" && result ? (
-              <>
-                <span
-                  className={`font-bold ${
-                    isSmaller
-                      ? "text-green-600 dark:text-green-400"
-                      : "text-amber-600 dark:text-amber-400"
-                  }`}
-                >
-                  변환 완료({Math.abs(compressionRate).toFixed(1)}%{" "}
-                  {isSmaller ? "감소" : "증가"})
-                </span>
-                <span>•</span>
-                <span className="font-medium">
-                  {result.format.toUpperCase()}
-                </span>
-                <span>•</span>
-                <span>{formatFileSize(result.convertedSize)}</span>
-                <span>•</span>
-                <span>{result.width}×{result.height}</span>
-              </>
+              <div>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-200/70 px-2 py-1 text-[11px] font-bold text-slate-600">
+                    <CheckCircleIcon className="h-4 w-4 text-emerald-600" aria-hidden="true" />
+                    변환 완료
+                  </span>
+                  <span
+                    className={`inline-flex items-baseline gap-1 rounded-xl px-2.5 py-1.5 tabular-nums ${
+                      isSameSize
+                        ? "bg-slate-100 text-slate-700"
+                        : isSmaller
+                          ? "bg-emerald-50 text-emerald-700"
+                          : "bg-amber-50 text-amber-800"
+                    }`}
+                  >
+                    <strong className="text-xl font-extrabold tracking-tight">
+                      {displayedCompressionRate}%
+                    </strong>
+                    <span className="text-xs font-bold">{sizeChangeLabel}</span>
+                  </span>
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-slate-500">
+                  <span className="tabular-nums">
+                    {formatFileSize(result.originalSize)}
+                    <span className="mx-1 text-slate-400" aria-hidden="true">→</span>
+                    <span className="font-bold text-slate-700">{formatFileSize(result.convertedSize)}</span>
+                  </span>
+                  <span aria-hidden="true">·</span>
+                  <span className="font-semibold">{result.format.toUpperCase()}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{result.width}×{result.height}</span>
+                </div>
+              </div>
             ) : (
-              <>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span className="font-medium">
                   {getFileExtension(imageFile.file.name)}
                 </span>
@@ -333,7 +354,7 @@ export const FileCard: React.FC<FileCardProps> = ({
                     </span>
                   </>
                 )}
-              </>
+              </div>
             )}
           </div>
         </div>
@@ -492,8 +513,7 @@ export const FileCard: React.FC<FileCardProps> = ({
                             : "text-amber-600 dark:text-amber-400"
                         }`}
                       >
-                        {Math.abs(compressionRate).toFixed(1)}%{" "}
-                        {isSmaller ? "감소" : "증가"}
+                        {displayedCompressionRate}% {sizeChangeLabel}
                       </span>
                     </div>
                     <div className="flex justify-between">
