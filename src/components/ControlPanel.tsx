@@ -3,7 +3,6 @@ import {
   AdjustmentsHorizontalIcon,
   ArrowDownTrayIcon,
   ChevronDownIcon,
-  LockClosedIcon,
   PhotoIcon,
 } from "@heroicons/react/24/outline";
 import type { MetadataPolicy } from "../utils/metadataPreservation";
@@ -188,15 +187,24 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                 <span><span className="block text-sm font-bold text-slate-800">파일명 단순화</span><span className="block text-xs text-slate-500">converted-1 형식으로 저장</span></span>
               </label>
 
-              <div className="flex min-h-14 items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-4">
-                <LockClosedIcon className="h-5 w-5 shrink-0 text-slate-500" aria-hidden="true" />
-                <label htmlFor="metadata-policy" className="min-w-0 flex-1">
-                  <span className="flex items-center gap-1 text-sm font-bold text-slate-800">메타데이터 <HelpTooltip label="메타데이터 처리 도움말">위치·촬영 기기 등 개인정보를 제거하거나 지원되는 EXIF를 유지합니다. AVIF는 항상 제거됩니다.</HelpTooltip></span>
-                  <select id="metadata-policy" value={effectiveMetadataPolicy} onChange={(event) => setMetadataPolicy(event.target.value as MetadataPolicy)} disabled={outputFormat === "avif"} className="mt-1 w-full bg-transparent text-xs font-medium text-slate-600 outline-none disabled:cursor-not-allowed">
-                    <option value="remove">개인정보 보호를 위해 제거</option>
-                    <option value="preserve">가능한 항목 보존</option>
-                  </select>
+              <div className={`flex min-h-14 items-center gap-3 rounded-2xl border px-4 transition ${outputFormat === "avif" ? "border-slate-200 bg-slate-100/80" : "border-slate-200 bg-slate-50/70"}`}>
+                <input
+                  id="remove-metadata"
+                  type="checkbox"
+                  checked={effectiveMetadataPolicy === "remove"}
+                  onChange={(event) => setMetadataPolicy(event.target.checked ? "remove" : "preserve")}
+                  disabled={outputFormat === "avif"}
+                  className="h-5 w-5 shrink-0 rounded border-slate-300 text-primary focus:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
+                />
+                <label htmlFor="remove-metadata" className={`min-w-0 flex-1 ${outputFormat === "avif" ? "cursor-not-allowed" : "cursor-pointer"}`}>
+                  <span className="block text-sm font-bold text-slate-800">메타데이터 모두 제거</span>
+                  <span className="mt-0.5 block text-xs text-slate-500">
+                    {outputFormat === "avif" ? "AVIF는 항상 제거됩니다" : "체크 해제 시 가능한 항목만 보존"}
+                  </span>
                 </label>
+                <HelpTooltip label="메타데이터 처리 도움말" align="right">
+                  체크를 해제하면 원본 파일과 출력 형식이 모두 지원하는 메타데이터 항목만 가능한 범위에서 보존합니다. AVIF 변환 시에는 항상 제거됩니다.
+                </HelpTooltip>
               </div>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import type { ImageFile, ConversionResult } from "../hooks/useImageConverter";
 import { downloadFile } from "../utils/file";
+import { FileActionButtons } from "./FileActionButtons";
 
 interface FileCardProps {
   type: "uploaded" | "result";
@@ -256,57 +257,15 @@ export const FileCard: React.FC<FileCardProps> = ({
                 : imageFile.file.name}
             </h3>
             <div
-              className="flex items-center gap-2 ml-4"
+              className="ml-4 flex items-center gap-1.5"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* 제거 버튼 */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRemoveFile(imageFile.id);
-                }}
-                className="flex min-h-11 min-w-11 items-center justify-center rounded-xl text-red-500 transition-colors hover:bg-red-50 hover:text-red-700"
-                title="파일 제거"
-                aria-label={`${imageFile.file.name} 제거`}
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-              </button>
-
-              {/* 다운로드 버튼 (변환 결과일 때만) */}
-              {type === "result" && result && (
-                <button
-                  onClick={handleDownload}
-                  className="flex min-h-11 min-w-11 items-center justify-center rounded-xl text-primary transition-colors hover:bg-violet-50"
-                  title="다운로드"
-                  aria-label={`${result.convertedName} 다운로드`}
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 10v6m0 0l-4-4m4 4l4-4m5-5v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h10a2 2 0 012 2z"
-                    />
-                  </svg>
-                </button>
-              )}
+              <FileActionButtons
+                fileName={imageFile.file.name}
+                downloadName={result?.convertedName}
+                onDelete={() => onRemoveFile(imageFile.id)}
+                onDownload={result ? handleDownload : undefined}
+              />
 
               {/* 확장/축소 버튼 */}
               <button
