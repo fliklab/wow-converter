@@ -54,6 +54,12 @@ WebAssembly(WASM)를 통해 C/C++로 작성된 이미지 코덱을 브라우저�
    yarn install
    ```
 
+### Analytics
+
+Production builds enable GA4 when `VITE_GA_MEASUREMENT_ID` is configured. Copy
+`example.env` to a local environment file when needed. The tracked event schema
+and privacy constraints are documented in [`docs/analytics.md`](./docs/analytics.md).
+
 ## License
 
 이 프로젝트는 Apache License 2.0을 따릅니다. 자세한 내용은 [LICENSE](./LICENSE) 파일을 참조하세요.

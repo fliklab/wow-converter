@@ -7,6 +7,7 @@ import {
 } from "@heroicons/react/24/outline";
 import type { MetadataPolicy } from "../utils/metadataPreservation";
 import { HelpTooltip } from "./HelpTooltip";
+import { trackAdvancedOptionsToggled } from "../analytics/converterEvents";
 
 interface ControlPanelProps {
   onSubmit: (options: {
@@ -95,6 +96,12 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
     });
   };
 
+  const toggleDetails = () => {
+    const nextState = !showDetails;
+    setShowDetails(nextState);
+    trackAdvancedOptionsToggled(nextState);
+  };
+
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/80 bg-white/95 shadow-[0_-18px_55px_rgba(45,43,80,0.16)] backdrop-blur-xl md:static md:mt-6 md:rounded-[28px] md:border md:border-white/90 md:shadow-[0_20px_55px_rgba(73,69,124,0.1)]">
       <form onSubmit={handleSubmit} className="mx-auto max-h-[78dvh] max-w-3xl overflow-y-auto px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:px-6 md:max-h-none md:overflow-visible md:p-6">
@@ -154,7 +161,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
         <button
           type="button"
-          onClick={() => setShowDetails((visible) => !visible)}
+          onClick={toggleDetails}
           aria-expanded={showDetails}
           aria-controls="advanced-options"
           className="mt-4 flex min-h-11 w-full items-center justify-between rounded-xl px-1 text-sm font-semibold text-slate-600 transition hover:text-slate-900"

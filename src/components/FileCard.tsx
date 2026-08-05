@@ -3,6 +3,7 @@ import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import type { ImageFile, ConversionResult } from "../hooks/useImageConverter";
 import { downloadFile } from "../utils/file";
 import { FileActionButtons } from "./FileActionButtons";
+import { trackConvertedImagesDownloaded } from "../analytics/converterEvents";
 
 interface FileCardProps {
   type: "uploaded" | "result";
@@ -202,6 +203,7 @@ export const FileCard: React.FC<FileCardProps> = ({
 
   const handleDownload = () => {
     if (result) {
+      trackConvertedImagesDownloaded([result], "single");
       downloadFile(result.convertedBlob, result.convertedName);
     }
   };
