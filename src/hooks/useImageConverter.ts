@@ -2,6 +2,15 @@ import { useCallback, useState } from "react";
 import type { ImageFormat, EncodeOptions } from "../utils/imageProcessor";
 import { downloadFile } from "../utils/file";
 import type { MetadataPolicy } from "../utils/metadataPreservation";
+import {
+  trackConversionCompleted,
+  trackConversionFailed,
+  trackConversionStarted,
+  trackConvertedImagesDownloaded,
+  trackImageRemoved,
+  trackImagesAdded,
+  trackWorkflowReset,
+} from "../analytics/converterEvents";
 
 export interface ConversionSettings {
   format: ImageFormat;
@@ -55,6 +64,7 @@ export const useImageConverter = () => {
   const [progress, setProgress] = useState(0);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
+    trackImagesAdded(acceptedFiles);
     const newImageFiles = acceptedFiles.map((file) => ({
       file,
       id: `${file.name}-${file.lastModified}-${crypto.randomUUID()}`,
@@ -65,6 +75,8 @@ export const useImageConverter = () => {
   }, []);
 
   const handleConvert = useCallback(async (settings: ConversionSettings) => {
+    const startedAt = performance.now();
+    let conversionMode: "new_files" | "reconvert_all" = "new_files";
     try {
       setError(null);
       setIsConverting(true);
@@ -77,6 +89,8 @@ export const useImageConverter = () => {
       const pendingFiles = files.filter((file) => !completedFileIds.has(file.id));
       const shouldReconvertAll = pendingFiles.length === 0;
       const filesToConvert = shouldReconvertAll ? files : pendingFiles;
+      conversionMode = shouldReconvertAll ? "reconvert_all" : "new_files";
+      trackConversionStarted(settings, filesToConvert.length, conversionMode);
 
       if (shouldReconvertAll) {
         setResults([]);
@@ -149,9 +163,16 @@ export const useImageConverter = () => {
           ? newResults
           : [...previousResults, ...newResults]
       );
+      trackConversionCompleted(
+        settings,
+        newResults,
+        performance.now() - startedAt,
+        conversionMode
+      );
       setShowToast(true);
     } catch (err) {
       console.error("이미지 변환 중 오류 발생:", err);
+      trackConversionFailed(settings, err);
       setError(
         err instanceof Error
           ? `변환 실패: ${err.message}`
@@ -165,26 +186,29 @@ export const useImageConverter = () => {
   const handleDownloadAll = useCallback(() => {
     if (results.length === 0) return;
 
+    trackConvertedImagesDownloaded(results, "all");
     results.forEach((result) => {
       downloadFile(result.convertedBlob, result.convertedName);
     });
   }, [results]);
 
   const handleClear = useCallback(() => {
+    trackWorkflowReset(files.length, results.length);
     setFiles([]);
     setResults([]);
     setError(null);
     setShowToast(false);
     setProgress(0);
-  }, []);
+  }, [files.length, results.length]);
 
   const handleRemoveFile = useCallback((fileId: string) => {
+    trackImageRemoved(results.some((result) => result.originalFile.id === fileId));
     setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
     // 만약 변환 결과에서도 해당 파일이 있다면 제거
     setResults((prevResults) =>
       prevResults.filter((result) => result.originalFile.id !== fileId)
     );
-  }, []);
+  }, [results]);
 
   const handleRenameResults = useCallback(
     (rename: boolean) => {
